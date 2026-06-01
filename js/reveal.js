@@ -52,62 +52,42 @@
   d.querySelectorAll("[data-depo-carousel]").forEach(function (carousel) {
     var track = carousel.querySelector("[data-depo-track]");
     var slides = track ? Array.prototype.slice.call(track.querySelectorAll(".depo-card")) : [];
-    var dots = Array.prototype.slice.call(carousel.querySelectorAll("[data-depo-dot]"));
-    var index = 0;
-    var timer = null;
     var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    function updateDots() {
-      dots.forEach(function (dot, i) { dot.classList.toggle("active", i === index); });
-    }
+    if (!track || slides.length < 2) return;
 
-    function goTo(nextIndex, behavior) {
-      if (!track || !slides.length) return;
-      index = (nextIndex + slides.length) % slides.length;
-      var slide = slides[index];
-      var left = slide.offsetLeft - track.offsetLeft - ((track.clientWidth - slide.clientWidth) / 2);
-      track.scrollTo({ left: Math.max(0, left), behavior: behavior || "smooth" });
-      updateDots();
-    }
-
-    function start() {
-      if (reduceMotion || timer || slides.length < 2) return;
-      timer = setInterval(function () {
-        if (!document.hidden) goTo(index + 1);
-      }, 3400);
-    }
-
-    function stop() {
-      if (!timer) return;
-      clearInterval(timer);
-      timer = null;
-    }
-
-    dots.forEach(function (dot, i) {
-      dot.addEventListener("click", function () {
-        stop();
-        goTo(i);
-        start();
-      });
+    slides.forEach(function (slide) {
+      var clone = slide.cloneNode(true);
+      clone.setAttribute("aria-hidden", "true");
+      clone.removeAttribute("data-reveal");
+      clone.classList.add("in", "depo-card--clone");
+      track.appendChild(clone);
     });
 
-    if (track) {
-      track.addEventListener("pointerdown", stop);
-      track.addEventListener("pointerup", start);
-      track.addEventListener("focusin", stop);
-      track.addEventListener("focusout", start);
+    track.classList.add("depo-track--marquee");
+
+    function syncDistance() {
+      var firstClone = track.querySelector(".depo-card--clone");
+      if (!firstClone) return;
+      var distance = firstClone.offsetLeft - slides[0].offsetLeft;
+      track.style.setProperty("--depo-distance", Math.max(0, distance) + "px");
     }
+
+    syncDistance();
+    window.addEventListener("resize", syncDistance, { passive: true });
+    track.querySelectorAll("img").forEach(function (img) {
+      if (!img.complete) img.addEventListener("load", syncDistance, { once: true });
+    });
+
+    if (reduceMotion) return;
 
     if ("IntersectionObserver" in window) {
       new IntersectionObserver(function (entries) {
-        if (entries[0].isIntersecting) start();
-        else stop();
+        carousel.classList.toggle("is-running", entries[0].isIntersecting);
       }, { threshold: 0.2 }).observe(carousel);
     } else {
-      start();
+      carousel.classList.add("is-running");
     }
-
-    goTo(0, "auto");
   });
 
   /* ---- barra CTA mobile: aparece após hero, some no rodapé ---- */

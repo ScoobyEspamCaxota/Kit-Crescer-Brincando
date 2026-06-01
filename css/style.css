@@ -280,15 +280,26 @@ h2.center + *, .eyebrow.center { }
    ========================================================= */
 .depo { overflow: hidden; isolation: isolate; }
 .depo h2 { margin-bottom: 26px; }
-.depo-carousel { position: relative; z-index: 1; max-width: 760px; margin-inline: auto; overflow: hidden; padding: 6px 0 18px; }
-.depo-track { display: flex; gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth; padding: 6px max(2px, calc((100% - min(360px, 82vw)) / 2)) 14px; scrollbar-width: none; overscroll-behavior-x: contain; }
+.depo-carousel { position: relative; z-index: 1; max-width: 980px; margin-inline: auto; overflow: hidden; padding: 8px 0 22px; }
+.depo-carousel::before, .depo-carousel::after { content: ""; position: absolute; top: 0; bottom: 0; width: clamp(22px, 8vw, 78px); z-index: 2; pointer-events: none; }
+.depo-carousel::before { left: 0; background: linear-gradient(90deg, var(--bg), rgba(255,248,239,0)); }
+.depo-carousel::after { right: 0; background: linear-gradient(270deg, var(--bg), rgba(255,248,239,0)); }
+.depo-track { display: flex; gap: 16px; width: max-content; max-width: none; overflow: visible; padding: 6px 0 16px; scrollbar-width: none; }
 .depo-track::-webkit-scrollbar { display: none; }
-.depo-card { flex: 0 0 min(360px, 82vw); margin: 0; scroll-snap-align: center; background: #fff; border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); border: 1.5px solid var(--border); max-width: 360px; pointer-events: none; }
+.depo-card { flex: 0 0 min(340px, 78vw); margin: 0; background: #fff; border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); border: 1.5px solid var(--border); max-width: 340px; pointer-events: none; }
 .depo-card img { width: 100%; height: auto; user-select: none; -webkit-user-drag: none; }
-.depo-dots { display: flex; justify-content: center; gap: 8px; margin-top: 4px; }
-.depo-dots button { width: 9px; height: 9px; padding: 0; border: 0; border-radius: 999px; background: #DECDBD; cursor: pointer; transition: width .2s ease, background .2s ease; }
-.depo-dots button.active { width: 24px; background: var(--cyan); }
+.js .depo-track.depo-track--marquee { animation: depo-marquee 19s linear infinite paused; transform: translate3d(0,0,0); will-change: transform; }
+.js .depo-carousel.is-running .depo-track--marquee { animation-play-state: running; }
+.js .depo-carousel:hover .depo-track--marquee { animation-play-state: paused; }
+@keyframes depo-marquee {
+  to { transform: translate3d(calc(-1 * var(--depo-distance, 1068px)), 0, 0); }
+}
 .depo-note { text-align: center; color: var(--muted); font-size: .8rem; margin-top: 8px; }
+@media (prefers-reduced-motion: reduce) {
+  .js .depo-track.depo-track--marquee { animation: none; width: 100%; overflow-x: auto; scroll-snap-type: x mandatory; }
+  .js .depo-track.depo-track--marquee .depo-card { scroll-snap-align: center; }
+  .depo-carousel::before, .depo-carousel::after { display: none; }
+}
 
 /* =========================================================
    OFERTA
@@ -374,8 +385,7 @@ h2.center + *, .eyebrow.center { }
   .bonus-grid { grid-template-columns: repeat(3, 1fr); }
   .hero-cta { flex-direction: row; }
   .hero-cta .btn { flex: 1; }
-  .depo-carousel { max-width: 820px; }
-  .depo-track { padding-inline: max(2px, calc((100% - 360px) / 2)); }
+  .depo-card { flex-basis: 340px; }
 }
 
 @media (min-width: 900px) {

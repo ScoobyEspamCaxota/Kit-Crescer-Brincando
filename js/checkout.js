@@ -153,24 +153,45 @@
     });
   }
 
+  function parseJsonResponse(r) {
+    return r.text().then(function (text) {
+      var j = {};
+      try {
+        j = text ? JSON.parse(text) : {};
+      } catch (_) {
+        var invalid = new Error(
+          text && text.trim().charAt(0) === "<"
+            ? "O servidor retornou uma página HTML em vez da resposta do PIX."
+            : "Resposta inválida do servidor."
+        );
+        invalid.status = r.status || 502;
+        throw invalid;
+      }
+
+      if (!r.ok) {
+        var err = new Error(j.error || "Falha ao gerar pagamento.");
+        err.status = r.status;
+        throw err;
+      }
+
+      return j;
+    });
+  }
+
   function requestCheckout(data, retriesLeft) {
     return fetchJsonWithTimeout(apiUrl("/api/checkout"), {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Accept": "application/json", "Content-Type": "application/json" },
       body: JSON.stringify(data),
     }, CHECKOUT_TIMEOUT_MS)
-      .then(function (r) {
-        return r.text().then(function (text) {
-          var j = {};
-          try { j = text ? JSON.parse(text) : {}; }
-          catch (_) { j = { error: text || "Resposta inválida do servidor." }; }
-          if (!r.ok) {
-            var err = new Error(j.error || "Falha ao gerar pagamento.");
-            err.status = r.status;
-            throw err;
-          }
-          return j;
-        });
+      .then(parseJsonResponse)
+      .then(function (j) {
+        if (!j.chargeId || !(j.qrCodePayload || j.qrCode || j.paymentLink)) {
+          var err = new Error("O gateway respondeu sem os dados do PIX. Tente novamente.");
+          err.status = 502;
+          throw err;
+        }
+        return j;
       })
       .catch(function (err) {
         if (retriesLeft > 0 && isTransientCheckoutError(err)) {
@@ -263,8 +284,10 @@
     var chargeId = payment.chargeId;
     if (pollTimer) clearInterval(pollTimer);
     pollTimer = setInterval(function () {
-      fetch("/api/status/" + encodeURIComponent(chargeId))
-        .then(function (r) { return r.json(); })
+      fetch(apiUrl("/api/status/" + encodeURIComponent(chargeId)), {
+        headers: { "Accept": "application/json" },
+      })
+        .then(parseJsonResponse)
         .then(function (s) {
           if (s.status === "PAID") {
             clearInterval(pollTimer); pollTimer = null;

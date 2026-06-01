@@ -48,6 +48,68 @@
     if (countEl) countEl.textContent = String(value);
   });
 
+  /* ---- carrossel de depoimentos ---- */
+  d.querySelectorAll("[data-depo-carousel]").forEach(function (carousel) {
+    var track = carousel.querySelector("[data-depo-track]");
+    var slides = track ? Array.prototype.slice.call(track.querySelectorAll(".depo-card")) : [];
+    var dots = Array.prototype.slice.call(carousel.querySelectorAll("[data-depo-dot]"));
+    var index = 0;
+    var timer = null;
+    var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    function updateDots() {
+      dots.forEach(function (dot, i) { dot.classList.toggle("active", i === index); });
+    }
+
+    function goTo(nextIndex, behavior) {
+      if (!track || !slides.length) return;
+      index = (nextIndex + slides.length) % slides.length;
+      var slide = slides[index];
+      var left = slide.offsetLeft - track.offsetLeft - ((track.clientWidth - slide.clientWidth) / 2);
+      track.scrollTo({ left: Math.max(0, left), behavior: behavior || "smooth" });
+      updateDots();
+    }
+
+    function start() {
+      if (reduceMotion || timer || slides.length < 2) return;
+      timer = setInterval(function () {
+        if (!document.hidden) goTo(index + 1);
+      }, 3400);
+    }
+
+    function stop() {
+      if (!timer) return;
+      clearInterval(timer);
+      timer = null;
+    }
+
+    dots.forEach(function (dot, i) {
+      dot.addEventListener("click", function () {
+        stop();
+        goTo(i);
+        start();
+      });
+    });
+
+    if (track) {
+      track.addEventListener("pointerdown", stop);
+      track.addEventListener("pointerup", start);
+      track.addEventListener("focusin", stop);
+      track.addEventListener("focusout", start);
+    }
+
+    if ("IntersectionObserver" in window) {
+      new IntersectionObserver(function (entries) {
+        if (entries[0].isIntersecting) start();
+        else stop();
+      }, { threshold: 0.2 }).observe(carousel);
+    } else {
+      start();
+    }
+
+    goTo(0, "auto");
+  });
+
   /* ---- barra CTA mobile: aparece após hero, some no rodapé ---- */
   var bar = d.getElementById("mobileBar");
   var hero = d.querySelector(".hero");

@@ -21,6 +21,7 @@ const {
   UTMIFY_ENDPOINT = "https://api.utmify.com.br/api-credentials/orders",
   UTMIFY_PLATFORM = "QuacPay",
   UTMIFY_IS_TEST = "false",
+  DOWNLOAD_URL = "",
   PORT = "3000",
 } = process.env;
 
@@ -347,7 +348,12 @@ app.get("/api/status/:chargeId", (req, res) => {
   const orders = readOrders();
   const key = findOrderKey(orders, req.params.chargeId);
   if (!key) return res.status(404).json({ status: "UNKNOWN" });
-  res.json({ status: orders[key].status, paidAt: orders[key].paidAt || null });
+  const order = orders[key];
+  res.json({
+    status: order.status,
+    paidAt: order.paidAt || null,
+    downloadUrl: order.status === "PAID" ? DOWNLOAD_URL || null : null,
+  });
 });
 
 /* health */
@@ -356,6 +362,7 @@ app.get("/api/health", (_req, res) =>
     ok: true,
     hasCreds: Boolean(QP_CLIENT_ID && QP_CLIENT_SECRET),
     hasUtmify: Boolean(UTMIFY_API_TOKEN),
+    hasDownload: Boolean(DOWNLOAD_URL),
   })
 );
 

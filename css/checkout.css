@@ -121,6 +121,13 @@
 .ckt-success .check svg { width: 40px; height: 40px; }
 .ckt-success h4 { margin: 0 0 6px; color: #15A34A; font-size: 1.3rem; }
 .ckt-success p { margin: 0; color: #6b7780; font-size: .9rem; }
+.ckt-download {
+  display: block; width: 100%; box-sizing: border-box; margin-top: 18px;
+  padding: 15px; border-radius: 999px; text-align: center; text-decoration: none;
+  background: linear-gradient(135deg, #22C55E, #15A34A);
+  color: #fff; font-weight: 800; box-shadow: 0 8px 20px rgba(21,163,74,.32);
+}
+.ckt-download:hover { filter: brightness(1.06); text-decoration: none; }
 
 @media (prefers-reduced-motion: reduce) {
   .ckt-backdrop.open, .ckt-modal, .ckt-success .check { animation: none; }

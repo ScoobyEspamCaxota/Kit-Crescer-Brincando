@@ -217,7 +217,7 @@
                 value: Number(payment.value || PRODUCT_VALUE),
               }, chargeId);
             }
-            showSuccess();
+            showSuccess(s.downloadUrl);
           }
         })
         .catch(function () {});
@@ -225,12 +225,13 @@
   }
 
   /* ---------- 4) sucesso ---------- */
-  function showSuccess() {
+  function showSuccess(downloadUrl) {
     body.innerHTML = [
       '<div class="ckt-success">',
       '  <div class="check"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l4 4 10-11" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>',
-      "  <h4>Pagamento confirmado! 🎉</h4>",
-      "  <p>Seu acesso ao Kit foi liberado. Confira seu e-mail.</p>",
+      "  <h4>Pagamento confirmado!</h4>",
+      "  <p>Seu acesso ao Kit foi liberado. Clique abaixo para baixar os arquivos.</p>",
+      downloadUrl ? '  <a class="ckt-download" href="' + esc(downloadUrl) + '" target="_blank" rel="noopener">Baixar meus arquivos</a>' : "",
       '  <button class="ckt-btn" type="button" id="ckt-done" style="margin-top:18px">Fechar</button>',
       "</div>",
     ].join("");

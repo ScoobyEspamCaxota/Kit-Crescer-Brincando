@@ -54,7 +54,7 @@ exports.handler = async (event) => {
       createdAt: new Date().toISOString(),
     };
     await saveOrder(order);
-    await notifyUtmify(order, "waiting_payment");
+    notifyUtmify(order, "waiting_payment");
 
     return json(200, {
       chargeId: c.chargeId,
@@ -66,6 +66,6 @@ exports.handler = async (event) => {
     });
   } catch (e) {
     console.error("[checkout]", e);
-    return json(500, { error: "Erro no servidor: " + e.message });
+    return json(e.statusCode || 500, { error: "Erro no servidor: " + e.message });
   }
 };

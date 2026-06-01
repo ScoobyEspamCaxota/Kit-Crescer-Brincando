@@ -12,6 +12,7 @@
   var PRODUCT_VALUE = 29.9;
   var pollTimer = null;
   var purchaseTracked = {};
+  var CHECKOUT_TIMEOUT_MS = 25000;
 
   function metaPayload(extra) {
     return Object.assign({
@@ -115,6 +116,70 @@
     return tracking;
   }
 
+  function wait(ms) {
+    return new Promise(function (resolve) { setTimeout(resolve, ms); });
+  }
+
+  function apiUrl(path) {
+    try { return new URL(path, window.location.origin).toString(); }
+    catch (_) { return path; }
+  }
+
+  function isTransientCheckoutError(err) {
+    var msg = String((err && err.message) || "");
+    return (
+      err && [408, 429, 500, 502, 503, 504].indexOf(Number(err.status)) !== -1
+    ) || /failed to fetch|network|load failed|timeout|tempo limite|string did not match/i.test(msg);
+  }
+
+  function friendlyCheckoutMessage(err) {
+    if (isTransientCheckoutError(err)) {
+      return "Não foi possível gerar o PIX agora. Tente novamente em alguns segundos.";
+    }
+    return (err && err.message) || "Falha ao gerar pagamento.";
+  }
+
+  function fetchJsonWithTimeout(url, options, timeoutMs) {
+    if (!window.AbortController) {
+      return fetch(url, options);
+    }
+
+    var controller = new AbortController();
+    var timer = setTimeout(function () { controller.abort(); }, timeoutMs);
+    options = Object.assign({}, options || {}, { signal: controller.signal });
+
+    return fetch(url, options).finally(function () {
+      clearTimeout(timer);
+    });
+  }
+
+  function requestCheckout(data, retriesLeft) {
+    return fetchJsonWithTimeout(apiUrl("/api/checkout"), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    }, CHECKOUT_TIMEOUT_MS)
+      .then(function (r) {
+        return r.text().then(function (text) {
+          var j = {};
+          try { j = text ? JSON.parse(text) : {}; }
+          catch (_) { j = { error: text || "Resposta inválida do servidor." }; }
+          if (!r.ok) {
+            var err = new Error(j.error || "Falha ao gerar pagamento.");
+            err.status = r.status;
+            throw err;
+          }
+          return j;
+        });
+      })
+      .catch(function (err) {
+        if (retriesLeft > 0 && isTransientCheckoutError(err)) {
+          return wait(900).then(function () { return requestCheckout(data, retriesLeft - 1); });
+        }
+        throw err;
+      });
+  }
+
   /* ---------- 1) formulário ---------- */
   function showForm(prefill) {
     prefill = prefill || {};
@@ -152,28 +217,15 @@
     msg.textContent = ""; msg.className = "ckt-msg";
     btn.disabled = true; btn.textContent = "Gerando PIX...";
 
-    fetch("/api/checkout", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    })
-      .then(function (r) {
-        return r.text().then(function (text) {
-          var j = {};
-          try { j = text ? JSON.parse(text) : {}; }
-          catch (_) { j = { error: text || "Resposta inválida do servidor." }; }
-          return { ok: r.ok, j: j };
-        });
-      })
+    requestCheckout(data, 1)
       .then(function (res) {
-        if (!res.ok) throw new Error(res.j.error || "Falha ao gerar pagamento.");
         metaTrack("AddPaymentInfo", {
           payment_method: "pix",
-        }, res.j.chargeId || "pix");
-        showPix(res.j, data);
+        }, res.chargeId || "pix");
+        showPix(res, data);
       })
       .catch(function (err) {
-        msg.textContent = err.message;
+        msg.textContent = friendlyCheckoutMessage(err);
         msg.className = "ckt-msg error";
         btn.disabled = false; btn.textContent = "Gerar PIX e pagar";
       });

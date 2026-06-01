@@ -30,6 +30,45 @@ const TRACKING_KEYS = [
 let tokenCache = { value: null, exp: 0 };
 
 const onlyDigits = (s) => String(s || "").replace(/\D/g, "");
+const QP_TIMEOUT_MS = Math.max(3000, Number(process.env.QP_TIMEOUT_MS || 9000));
+const QP_RETRY_DELAY_MS = 450;
+
+function wait(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function isTransientStatus(status) {
+  return [408, 429, 500, 502, 503, 504].includes(Number(status));
+}
+
+async function fetchJsonWithTimeout(url, options = {}, timeoutMs = QP_TIMEOUT_MS) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const response = await fetch(url, { ...options, signal: controller.signal });
+    const text = await response.text().catch(() => "");
+    let data = {};
+    try {
+      data = text ? JSON.parse(text) : {};
+    } catch {
+      data = { message: text.slice(0, 500) };
+    }
+    return { response, data };
+  } catch (e) {
+    const error = new Error(
+      e.name === "AbortError"
+        ? "Tempo limite ao comunicar com o gateway de pagamento."
+        : e.message || "Falha de rede ao comunicar com o gateway de pagamento."
+    );
+    error.transient = true;
+    error.timeout = e.name === "AbortError";
+    error.statusCode = error.timeout ? 504 : 502;
+    throw error;
+  } finally {
+    clearTimeout(timer);
+  }
+}
 
 function json(statusCode, body) {
   return {
@@ -95,37 +134,70 @@ async function getToken() {
     throw new Error("Credenciais QuacPay ausentes no Netlify.");
   }
 
-  const r = await fetch(`${QP_BASE}/oauth/token`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      grant_type: "client_credentials",
-      client_id: QP_CLIENT_ID,
-      client_secret: QP_CLIENT_SECRET,
-    }),
-  });
-  const data = await r.json().catch(() => ({}));
-  if (!r.ok || !data.access_token) {
-    throw new Error(`OAuth falhou (${r.status}): ${data.message || JSON.stringify(data)}`);
-  }
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      const { response, data } = await fetchJsonWithTimeout(`${QP_BASE}/oauth/token`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          grant_type: "client_credentials",
+          client_id: QP_CLIENT_ID,
+          client_secret: QP_CLIENT_SECRET,
+        }),
+      });
 
-  const ttl = Math.max(60, Number(data.expires_in || 3600)) * 1000;
-  tokenCache = { value: data.access_token, exp: now + ttl };
-  return tokenCache.value;
+      if (response.ok && data.access_token) {
+        const ttl = Math.max(60, Number(data.expires_in || 3600)) * 1000;
+        tokenCache = { value: data.access_token, exp: now + ttl };
+        return tokenCache.value;
+      }
+
+      if (!isTransientStatus(response.status) || attempt === 2) {
+        throw new Error(`OAuth falhou (${response.status}): ${data.message || JSON.stringify(data)}`);
+      }
+    } catch (e) {
+      if (e.timeout || !e.transient || attempt === 2) throw e;
+    }
+
+    await wait(QP_RETRY_DELAY_MS);
+  }
 }
 
 async function qpFetch(pathname, { method = "GET", body } = {}) {
-  const token = await getToken();
-  const r = await fetch(`${QP_BASE}${pathname}`, {
-    method,
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
-    body: body ? JSON.stringify(body) : undefined,
-  });
-  const data = await r.json().catch(() => ({}));
-  return { ok: r.ok, status: r.status, data };
+  let lastError = null;
+
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      const token = await getToken();
+      const { response, data } = await fetchJsonWithTimeout(`${QP_BASE}${pathname}`, {
+        method,
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: body ? JSON.stringify(body) : undefined,
+      });
+
+      if (response.status === 401 && attempt === 1) {
+        tokenCache = { value: null, exp: 0 };
+        await wait(QP_RETRY_DELAY_MS);
+        continue;
+      }
+
+      if (!response.ok && isTransientStatus(response.status) && attempt === 1) {
+        await wait(QP_RETRY_DELAY_MS);
+        continue;
+      }
+
+      return { ok: response.ok, status: response.status, data };
+    } catch (e) {
+      lastError = e;
+      if (e.timeout || !e.transient || attempt === 2) throw e;
+      await wait(QP_RETRY_DELAY_MS);
+    }
+  }
+
+  throw lastError || new Error("Falha ao comunicar com o gateway de pagamento.");
 }
 
 function ordersStore() {

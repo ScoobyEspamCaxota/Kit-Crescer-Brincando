@@ -3,6 +3,7 @@
 const {
   PRICE,
   PRODUCT,
+  connectBlobs,
   getClientIp,
   json,
   normalizeTracking,
@@ -20,6 +21,7 @@ exports.handler = async (event) => {
   }
 
   try {
+    connectBlobs(event);
     const buyer = parseJsonBody(event);
     const err = validBuyer(buyer);
     if (err) return json(400, { error: err });

@@ -1,7 +1,7 @@
 "use strict";
 
 const crypto = require("crypto");
-const { getStore } = require("@netlify/blobs");
+const { connectLambda, getStore } = require("@netlify/blobs");
 
 const {
   QP_BASE = "https://quacpay.com",
@@ -40,6 +40,10 @@ function json(statusCode, body) {
     },
     body: JSON.stringify(body),
   };
+}
+
+function connectBlobs(event) {
+  connectLambda(event);
 }
 
 function getHeader(event, name) {
@@ -260,6 +264,7 @@ module.exports = {
   PRICE,
   PRODUCT,
   QP_WEBHOOK_SECRET,
+  connectBlobs,
   envInfo,
   findOrder,
   getClientIp,

@@ -2,6 +2,7 @@
 
 const {
   QP_WEBHOOK_SECRET,
+  connectBlobs,
   findOrder,
   getHeader,
   json,
@@ -16,6 +17,7 @@ exports.handler = async (event) => {
     return json(405, { error: "Metodo nao permitido." });
   }
 
+  connectBlobs(event);
   const raw = rawBody(event);
   const evtHeader = getHeader(event, "Quacpay-Event") || "";
   const sig = getHeader(event, "Quacpay-Signature") || "";

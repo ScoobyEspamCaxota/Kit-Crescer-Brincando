@@ -1,6 +1,6 @@
 "use strict";
 
-const { DOWNLOAD_URL, findOrder, json } = require("./_shared");
+const { DOWNLOAD_URL, connectBlobs, findOrder, json } = require("./_shared");
 
 function chargeIdFromPath(event) {
   const path = event.path || "";
@@ -13,6 +13,7 @@ exports.handler = async (event) => {
   }
 
   try {
+    connectBlobs(event);
     const chargeId = chargeIdFromPath(event);
     const order = await findOrder(chargeId);
     if (!order) return json(404, { status: "UNKNOWN" });

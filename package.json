@@ -6,6 +6,7 @@
     "start": "node server.js"
   },
   "dependencies": {
+    "@netlify/blobs": "^10.7.9",
     "dotenv": "^16.4.5",
     "express": "^4.19.2"
   }

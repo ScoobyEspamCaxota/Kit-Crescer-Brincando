@@ -157,7 +157,14 @@
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     })
-      .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+      .then(function (r) {
+        return r.text().then(function (text) {
+          var j = {};
+          try { j = text ? JSON.parse(text) : {}; }
+          catch (_) { j = { error: text || "Resposta inválida do servidor." }; }
+          return { ok: r.ok, j: j };
+        });
+      })
       .then(function (res) {
         if (!res.ok) throw new Error(res.j.error || "Falha ao gerar pagamento.");
         metaTrack("AddPaymentInfo", {

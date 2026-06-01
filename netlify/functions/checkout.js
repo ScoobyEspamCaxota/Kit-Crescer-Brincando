@@ -1,0 +1,69 @@
+"use strict";
+
+const {
+  PRICE,
+  PRODUCT,
+  getClientIp,
+  json,
+  normalizeTracking,
+  notifyUtmify,
+  onlyDigits,
+  parseJsonBody,
+  qpFetch,
+  saveOrder,
+  validBuyer,
+} = require("./_shared");
+
+exports.handler = async (event) => {
+  if (event.httpMethod !== "POST") {
+    return json(405, { error: "Metodo nao permitido." });
+  }
+
+  try {
+    const buyer = parseJsonBody(event);
+    const err = validBuyer(buyer);
+    if (err) return json(400, { error: err });
+
+    const phone = onlyDigits(buyer.phone);
+    const value = Number(PRICE);
+    const externalReference = "CB-" + Date.now();
+    const charge = await qpFetch("/api/v1/charges/pix", {
+      method: "POST",
+      body: { value, externalReference },
+    });
+
+    if (!charge.ok || !charge.data?.success) {
+      return json(502, {
+        error: charge.data?.message || "Falha ao gerar cobranca PIX.",
+        detail: charge.data,
+      });
+    }
+
+    const c = charge.data;
+    const order = {
+      chargeId: c.chargeId,
+      correlationID: c.correlationID || externalReference,
+      externalReference,
+      status: "ACTIVE",
+      value,
+      buyer: { name: buyer.name, email: buyer.email, phone },
+      tracking: normalizeTracking(buyer.tracking),
+      ip: getClientIp(event),
+      createdAt: new Date().toISOString(),
+    };
+    await saveOrder(order);
+    await notifyUtmify(order, "waiting_payment");
+
+    return json(200, {
+      chargeId: c.chargeId,
+      qrCode: c.qrCode || "",
+      qrCodePayload: c.qrCodePayload || "",
+      paymentLink: c.paymentLink || "",
+      value,
+      product: PRODUCT,
+    });
+  } catch (e) {
+    console.error("[checkout]", e);
+    return json(500, { error: "Erro no servidor: " + e.message });
+  }
+};

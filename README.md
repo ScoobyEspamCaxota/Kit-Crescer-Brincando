@@ -25,6 +25,19 @@ Nunca publique o arquivo `.env`.
 
 ## Deploy
 
-A landing estatica pode ser publicada em provedores como Netlify. Para o checkout
-funcionar em producao no Netlify, as rotas de `server.js` precisam ser adaptadas
-para Netlify Functions ou hospedadas em um backend Node separado.
+A landing pode ser publicada no Netlify. As rotas de checkout tambem existem em
+`netlify/functions` e sao reescritas por `netlify.toml` para manter os endpoints:
+
+- `/api/checkout`
+- `/api/status/:chargeId`
+- `/api/webhook`
+- `/api/health`
+
+No painel da QuacPay, configure o webhook para:
+
+```text
+https://SEU-DOMINIO.netlify.app/api/webhook
+```
+
+No painel do Netlify, cadastre as variaveis do `.env.example` em Environment
+variables e faca um novo deploy.

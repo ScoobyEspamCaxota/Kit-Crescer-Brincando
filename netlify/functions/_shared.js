@@ -129,11 +129,11 @@ async function qpFetch(pathname, { method = "GET", body } = {}) {
 }
 
 function ordersStore() {
-  return getStore({ name: "orders", consistency: "strong" });
+  return getStore("orders");
 }
 
 async function getOrder(chargeId) {
-  return ordersStore().get(chargeId, { type: "json", consistency: "strong" });
+  return ordersStore().get(chargeId, { type: "json" });
 }
 
 async function saveOrder(order) {
@@ -148,7 +148,7 @@ async function findOrder(chargeId) {
   const store = ordersStore();
   const list = await store.list();
   for (const blob of list.blobs || []) {
-    const order = await store.get(blob.key, { type: "json", consistency: "strong" }).catch(() => null);
+    const order = await store.get(blob.key, { type: "json" }).catch(() => null);
     if (order && (order.chargeId === chargeId || order.correlationID === chargeId || order.externalReference === chargeId)) {
       return order;
     }

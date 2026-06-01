@@ -1,0 +1,200 @@
+/* =========================================================
+   Crescer Brincando — camada de enhancement (anim + CTA)
+   Só adiciona animação/polish. Não altera posicionamento.
+   Tudo gated em html.enhanced (JS) → sem JS, nada some.
+   ========================================================= */
+
+/* ---------- Reveal ao rolar (entrada suave) ---------- */
+@media (prefers-reduced-motion: no-preference) {
+  html.enhanced .centralizar > [id^="e_"] {
+    opacity: 0;
+    translate: 0 30px;            /* independente do transform:translate do GreatPages */
+    filter: blur(3px);
+    transition:
+      opacity .7s cubic-bezier(.22,.75,.2,1),
+      translate .75s cubic-bezier(.22,.75,.2,1),
+      filter .7s ease;
+    transition-delay: var(--rd, 0ms);
+    will-change: opacity, translate;
+  }
+  html.enhanced .centralizar > [id^="e_"].in {
+    opacity: 1;
+    translate: 0 0;
+    filter: none;
+  }
+}
+
+/* ---------- CTAs / botões — CHAMATIVOS ---------- */
+html.enhanced .e_botao {
+  position: relative;
+  overflow: hidden;                 /* clipa o brilho dentro */
+  border-radius: 999px !important;  /* pílula */
+  font-weight: 800 !important;
+  letter-spacing: .3px;
+  /* verniz 3D por cima da cor do botão (qualquer cor) */
+  background-image:
+    linear-gradient(180deg, rgba(255,255,255,.26) 0%, rgba(255,255,255,0) 42%, rgba(0,0,0,.12) 100%) !important;
+  transition: filter .2s ease, letter-spacing .2s ease;
+}
+/* hover: brilha, satura, glow forte (sem transform p/ não brigar com o pulso) */
+html.enhanced .e_botao:hover {
+  filter:
+    brightness(1.12) saturate(1.18)
+    drop-shadow(0 10px 20px rgba(0,0,0,.30))
+    drop-shadow(0 0 18px rgba(255,255,255,.5));
+  letter-spacing: .6px;
+}
+html.enhanced .e_botao:active { filter: brightness(.95); }
+
+@media (prefers-reduced-motion: no-preference) {
+  /* pulso: escala + verniz + glow + ANEL de atenção (tudo no box-shadow do próprio botão) */
+  html.enhanced .e_botao {
+    animation: cta-pulse 1.7s ease-in-out infinite;
+  }
+  /* brilho passando */
+  html.enhanced .e_botao::after {
+    content: "";
+    position: absolute;
+    top: 0; left: -80%;
+    width: 55%; height: 100%;
+    background: linear-gradient(100deg, transparent 0%, rgba(255,255,255,.7) 50%, transparent 100%);
+    transform: skewX(-18deg);
+    pointer-events: none;
+    z-index: 2;
+    animation: cta-shine 3s ease-in-out infinite;
+  }
+}
+
+@keyframes cta-pulse {
+  0% {
+    transform: scale(1);
+    box-shadow:
+      inset 0 2px 0 rgba(255,255,255,.30),
+      0 7px 16px rgba(15,25,35,.26),
+      0 0 0 0 rgba(255,255,255,.6);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow:
+      inset 0 2px 0 rgba(255,255,255,.40),
+      0 14px 32px rgba(15,25,35,.40),
+      0 0 0 12px rgba(255,255,255,0);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow:
+      inset 0 2px 0 rgba(255,255,255,.30),
+      0 7px 16px rgba(15,25,35,.26),
+      0 0 0 0 rgba(255,255,255,0);
+  }
+}
+@keyframes cta-shine {
+  0%        { left: -80%; }
+  55%, 100% { left: 150%; }
+}
+
+/* =======================================
+   HERO (b_c81) — redesenho completo
+   ======================================= */
+
+/* fundo: gradiente vivo (substitui a imagem cyan) */
+#b_3497366_1_1769608054697a1376e3c81 {
+  background-image: none !important;
+  background-color: #1a9ccc !important;
+  background-image:
+    radial-gradient(ellipse 55% 50% at 22% 28%, rgba(130,228,244,.45) 0%, transparent 100%),
+    radial-gradient(ellipse 50% 45% at 80% 72%, rgba(124,200,166,.35) 0%, transparent 100%),
+    radial-gradient(ellipse 40% 40% at 55% 15%, rgba(255,255,255,.20) 0%, transparent 100%),
+    linear-gradient(170deg, #22b5e0 0%, #1690c0 40%, #1378a8 100%) !important;
+}
+#b_3497366_1_1769608054697a1376e3c81 .gpc-b_sobreposicao {
+  background: transparent !important;
+  opacity: 0 !important;
+}
+
+/* decorativos: círculos flutuantes nos cantos (pseudo do bloco) */
+#b_3497366_1_1769608054697a1376e3c81::after {
+  content: "";
+  position: absolute;
+  top: -18%; left: -12%;
+  width: 38%; height: 55%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,209,102,.25) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+  animation: hero-orb1 12s ease-in-out infinite alternate;
+}
+@keyframes hero-orb1 {
+  from { transform: translate(0, 0) scale(1); }
+  to   { transform: translate(4%, 6%) scale(1.08); }
+}
+
+/* título: overflow + cor + glow */
+#e_3497366_1_1769608054697a1376e41e4232401494 .c {
+  overflow: hidden;
+}
+#e_3497366_1_1769608054697a1376e41e4232401494 .c .titulo {
+  color: #fff !important;
+  text-shadow:
+    0 0 12px rgba(255,255,255,.25),
+    0 2px 5px rgba(0,50,90,.20) !important;
+}
+
+/* legenda: frosted card com overflow */
+#e_3497366_1_1769608054697a137703cbd762809054 .c {
+  overflow: hidden;
+  background: rgba(255,255,255,.22) !important;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1.5px solid rgba(255,255,255,.38);
+  border-radius: 14px !important;
+}
+#e_3497366_1_1769608054697a137703cbd762809054 .c .titulo {
+  color: #fff !important;
+  text-shadow: 0 1px 3px rgba(0,50,90,.18) !important;
+}
+
+/* descrição: frosted com overflow */
+#e_3497366_1_1769608054697a1376e423d337675264 .c {
+  overflow: hidden;
+  background: rgba(255,255,255,.15) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,.25);
+  border-radius: 12px !important;
+}
+#e_3497366_1_1769608054697a1376e423d337675264 .c .titulo {
+  color: rgba(255,255,255,.95) !important;
+}
+
+/* badge: flutua suave */
+@media (prefers-reduced-motion: no-preference) {
+  #e_3497366_1_1769608054697a1376e880b637637335 {
+    animation: hero-badge-float 4s ease-in-out infinite;
+  }
+  @keyframes hero-badge-float {
+    0%, 100% { translate: 0 0; }
+    50%      { translate: 0 -7px; }
+  }
+}
+
+/* =======================================
+   FOOTER/FAQ: troca fundo roxo por azul coeso
+   ======================================= */
+#b_3497366_1_1769608054697a1376e3cb1 {
+  background-image: linear-gradient(180deg, #2BA8CC 0%, #1C84AC 55%, #176E96 100%) !important;
+  background-color: #1C84AC !important;
+}
+#b_3497366_1_1769608054697a1376e3cb1 .gpc-b_sobreposicao {
+  background: transparent !important;
+  opacity: 0 !important;
+}
+
+/* ---------- Segurança: reduce-motion mostra tudo, sem anim ---------- */
+@media (prefers-reduced-motion: reduce) {
+  html.enhanced .centralizar > [id^="e_"] {
+    opacity: 1 !important;
+    translate: none !important;
+    filter: none !important;
+  }
+}

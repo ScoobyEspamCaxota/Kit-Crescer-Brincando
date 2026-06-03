@@ -7,6 +7,16 @@
   "use strict";
   var d = document;
 
+  function onIdle(fn) {
+    if ("requestIdleCallback" in window) {
+      window.requestIdleCallback(fn, { timeout: 1800 });
+      return;
+    }
+    window.addEventListener("load", function () {
+      window.setTimeout(fn, 250);
+    }, { once: true });
+  }
+
   /* ---- header: sombra ao rolar ---- */
   var header = d.querySelector(".site-header");
   function onScroll() { if (header) header.classList.toggle("scrolled", window.scrollY > 8); }
@@ -64,45 +74,47 @@
   });
 
   /* ---- carrossel de depoimentos ---- */
-  d.querySelectorAll("[data-depo-carousel]").forEach(function (carousel) {
-    var track = carousel.querySelector("[data-depo-track]");
-    var slides = track ? Array.prototype.slice.call(track.querySelectorAll(".depo-card")) : [];
-    var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  onIdle(function () {
+    d.querySelectorAll("[data-depo-carousel]").forEach(function (carousel) {
+      var track = carousel.querySelector("[data-depo-track]");
+      var slides = track ? Array.prototype.slice.call(track.querySelectorAll(".depo-card")) : [];
+      var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    if (!track || slides.length < 2) return;
+      if (!track || slides.length < 2) return;
 
-    slides.forEach(function (slide) {
-      var clone = slide.cloneNode(true);
-      clone.setAttribute("aria-hidden", "true");
-      clone.removeAttribute("data-reveal");
-      clone.classList.add("in", "depo-card--clone");
-      track.appendChild(clone);
+      slides.forEach(function (slide) {
+        var clone = slide.cloneNode(true);
+        clone.setAttribute("aria-hidden", "true");
+        clone.removeAttribute("data-reveal");
+        clone.classList.add("in", "depo-card--clone");
+        track.appendChild(clone);
+      });
+
+      track.classList.add("depo-track--marquee");
+
+      function syncDistance() {
+        var firstClone = track.querySelector(".depo-card--clone");
+        if (!firstClone) return;
+        var distance = firstClone.offsetLeft - slides[0].offsetLeft;
+        track.style.setProperty("--depo-distance", Math.max(0, distance) + "px");
+      }
+
+      syncDistance();
+      window.addEventListener("resize", syncDistance, { passive: true });
+      track.querySelectorAll("img").forEach(function (img) {
+        if (!img.complete) img.addEventListener("load", syncDistance, { once: true });
+      });
+
+      if (reduceMotion) return;
+
+      if ("IntersectionObserver" in window) {
+        new IntersectionObserver(function (entries) {
+          carousel.classList.toggle("is-running", entries[0].isIntersecting);
+        }, { threshold: 0.2 }).observe(carousel);
+      } else {
+        carousel.classList.add("is-running");
+      }
     });
-
-    track.classList.add("depo-track--marquee");
-
-    function syncDistance() {
-      var firstClone = track.querySelector(".depo-card--clone");
-      if (!firstClone) return;
-      var distance = firstClone.offsetLeft - slides[0].offsetLeft;
-      track.style.setProperty("--depo-distance", Math.max(0, distance) + "px");
-    }
-
-    syncDistance();
-    window.addEventListener("resize", syncDistance, { passive: true });
-    track.querySelectorAll("img").forEach(function (img) {
-      if (!img.complete) img.addEventListener("load", syncDistance, { once: true });
-    });
-
-    if (reduceMotion) return;
-
-    if ("IntersectionObserver" in window) {
-      new IntersectionObserver(function (entries) {
-        carousel.classList.toggle("is-running", entries[0].isIntersecting);
-      }, { threshold: 0.2 }).observe(carousel);
-    } else {
-      carousel.classList.add("is-running");
-    }
   });
 
   /* ---- barra CTA mobile: aparece após hero, some no rodapé ---- */

@@ -381,10 +381,61 @@ app.get("/api/health", (_req, res) =>
   })
 );
 
+/* Utmify usa esta rota em localhost; em produção ela chama o domínio da própria Utmify. */
+app.post("/tracking/v1/events", async (req, res) => {
+  const fallback = {
+    lead: {
+      _id: null,
+      pixelId: req.body?.lead?.pixelId || null,
+      metaPixelIds: [],
+    },
+  };
+
+  try {
+    const upstream = await fetch("https://tracking.utmify.com.br/tracking/v1/events", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(req.body || {}),
+    });
+    const text = await upstream.text();
+    const body = text.trim();
+
+    if (!body || (!body.startsWith("{") && !body.startsWith("["))) {
+      return res.status(200).json(fallback);
+    }
+
+    res.status(upstream.status);
+    res.setHeader("Content-Type", "application/json");
+    return res.send(body);
+  } catch (_err) {
+    return res.status(200).json(fallback);
+  }
+});
+
 /* =========================================================
    ESTÁTICO — serve o site (index.html, app.html, css, js, assets)
    ========================================================= */
-app.use(express.static(ROOT, { extensions: ["html"], index: "index.html" }));
+app.use(express.static(ROOT, {
+  extensions: ["html"],
+  index: "index.html",
+  setHeaders(res, filePath) {
+    const ext = path.extname(filePath).toLowerCase();
+
+    if (ext === ".html") {
+      res.setHeader("Cache-Control", "no-store");
+      return;
+    }
+
+    if ([".png", ".jpg", ".jpeg", ".webp", ".svg", ".gif", ".ico", ".woff", ".woff2"].includes(ext)) {
+      res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+      return;
+    }
+
+    if ([".css", ".js"].includes(ext)) {
+      res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+    }
+  },
+}));
 
 app.listen(Number(PORT), () => {
   console.log(`\n  Crescer Brincando rodando em http://localhost:${PORT}`);

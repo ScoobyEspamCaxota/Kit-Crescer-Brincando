@@ -360,7 +360,7 @@
       '  <div class="ckt-field"><label>E-mail</label><input name="email" type="email" autocomplete="email" placeholder="voce@email.com" value="' + esc(prefill.email) + '"></div>',
       '  <button class="ckt-btn" type="submit">' + offer.cta + '</button>',
       '  <div class="ckt-msg" id="ckt-msg"></div>',
-      '  <div class="ckt-secure"><img src="assets/offer-badges.svg" alt="Compra segura, acesso imediato e 7 dias de garantia" width="270" height="28"></div>',
+      '  <div class="ckt-secure"><img src="assets/offer-badges.svg" alt="Compra segura, acesso imediato e 7 dias de garantia" width="270" height="28" loading="lazy" decoding="async"></div>',
       "</form>",
     ].join("");
 

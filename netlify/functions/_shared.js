@@ -15,6 +15,7 @@ const {
   UTMIFY_PLATFORM = "QuacPay",
   UTMIFY_IS_TEST = "false",
   DOWNLOAD_URL = "",
+  DOWNSELL_PRICE = "14.99",
 } = process.env;
 
 const TRACKING_KEYS = [
@@ -230,6 +231,19 @@ function toCents(value) {
   return Math.round(Number(value || 0) * 100);
 }
 
+function moneyValue(value, fallback) {
+  const n = Number(value);
+  return Number.isFinite(n) && n > 0 ? Number(n.toFixed(2)) : fallback;
+}
+
+function resolveOffer(offerId) {
+  const id = String(offerId || "main").toLowerCase();
+  if (id === "rescue" || id === "downsell") {
+    return { id: "rescue", value: moneyValue(DOWNSELL_PRICE, 14.99) };
+  }
+  return { id: "main", value: moneyValue(PRICE, 29.9) };
+}
+
 function formatUtcForUtmify(value) {
   const d = value ? new Date(value) : new Date();
   return d.toISOString().replace("T", " ").slice(0, 19);
@@ -346,6 +360,7 @@ module.exports = {
   parseJsonBody,
   qpFetch,
   rawBody,
+  resolveOffer,
   saveOrder,
   validBuyer,
   verifySignature,

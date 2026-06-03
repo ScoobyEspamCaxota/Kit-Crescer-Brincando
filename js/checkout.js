@@ -9,7 +9,30 @@
   var PRICE_OLD = "R$ 97,90";
   var PRODUCT_NAME = "Kit Crescer Brincando";
   var PRODUCT_ID = "kit-crescer-brincando";
-  var PRODUCT_VALUE = 29.9;
+  var OFFERS = {
+    main: {
+      id: "main",
+      value: 29.9,
+      price: "R$ 29,90",
+      tag: "Oferta ativa",
+      cta: "Gerar PIX e pagar",
+      promoBadge: "PROMOÇÃO",
+      promoText: "Oferta reservada por",
+      priceTone: "",
+    },
+    rescue: {
+      id: "rescue",
+      value: 14.99,
+      price: "R$ 14,99",
+      tag: "Condição especial",
+      cta: "Garantir por R$ 14,99",
+      promoBadge: "OFERTA ESPECIAL",
+      promoText: "Condição liberada por",
+      priceTone: " ckt-price--rescue",
+    },
+  };
+  var currentOffer = OFFERS.main;
+  var rescueShown = false;
   var pollTimer = null;
   var promoTimer = null;
   var promoDeadline = null;
@@ -17,15 +40,20 @@
   var purchaseTracked = {};
   var CHECKOUT_TIMEOUT_MS = 25000;
 
+  function activeOffer() {
+    return currentOffer || OFFERS.main;
+  }
+
   function metaPayload(extra) {
+    var offer = activeOffer();
     return Object.assign({
       content_ids: [PRODUCT_ID],
       content_name: PRODUCT_NAME,
       content_type: "product",
-      contents: [{ id: PRODUCT_ID, quantity: 1, item_price: PRODUCT_VALUE }],
+      contents: [{ id: PRODUCT_ID, quantity: 1, item_price: offer.value }],
       currency: "BRL",
       num_items: 1,
-      value: PRODUCT_VALUE,
+      value: offer.value,
     }, extra || {});
   }
 
@@ -72,16 +100,25 @@
   var body = backdrop.querySelector("#ckt-body");
 
   function open() {
+    currentOffer = OFFERS.main;
+    rescueShown = false;
     metaTrack("InitiateCheckout", {}, "open");
     backdrop.classList.add("open");
     resetPromoDeadline();
     showForm();
   }
-  function close() {
+  function forceClose() {
     backdrop.classList.remove("open");
     if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
     stopPromoCountdown();
     promoDeadline = null;
+  }
+  function close() {
+    if (shouldShowRescueOffer()) {
+      showRescueOffer(readFormPrefill());
+      return;
+    }
+    forceClose();
   }
   backdrop.querySelector(".ckt-close").addEventListener("click", close);
   backdrop.addEventListener("click", function (e) { if (e.target === backdrop) close(); });
@@ -196,6 +233,68 @@
       });
   }
 
+  function formatPrice(value) {
+    var n = Number(value || 0);
+    return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+  }
+
+  function readFormPrefill() {
+    var form = body.querySelector("#ckt-form");
+    if (!form) return {};
+    return {
+      name: form.name ? form.name.value.trim() : "",
+      email: form.email ? form.email.value.trim() : "",
+    };
+  }
+
+  function shouldShowRescueOffer() {
+    return (
+      backdrop.classList.contains("open") &&
+      !rescueShown &&
+      activeOffer().id === "main" &&
+      Boolean(body.querySelector("#ckt-form"))
+    );
+  }
+
+  function showRescueOffer(prefill) {
+    prefill = prefill || {};
+    rescueShown = true;
+    stopPromoCountdown();
+    metaTrack("ViewContent", {
+      event_source: "rescue_offer",
+      value: OFFERS.rescue.value,
+    }, "rescue-offer");
+
+    body.innerHTML = [
+      '<div class="ckt-rescue">',
+      '  <span class="ckt-rescue-badge">Oferta especial liberada</span>',
+      "  <h4>Antes de sair, fique com o Kit completo por R$ 14,99</h4>",
+      "  <p>É o mesmo acesso digital: +270 atividades, os 3 bônus e o mesmo link de download. A diferença é só a condição especial para você decidir agora.</p>",
+      '  <div class="ckt-rescue-price"><span>De ' + PRICE_OLD + '</span><strong>R$ 14,99</strong></div>',
+      '  <ul class="ckt-rescue-list">',
+      "    <li>Mesmo material entregue após o pagamento</li>",
+      "    <li>Mesmo acesso imediato pelo download</li>",
+      "    <li>Mesma garantia de 7 dias</li>",
+      "  </ul>",
+      '  <button class="ckt-btn ckt-rescue-accept" type="button" id="ckt-rescue-accept">Quero garantir por R$ 14,99</button>',
+      '  <button class="ckt-link-btn" type="button" id="ckt-rescue-decline">Não, obrigado</button>',
+      "</div>",
+    ].join("");
+
+    var accept = body.querySelector("#ckt-rescue-accept");
+    var decline = body.querySelector("#ckt-rescue-decline");
+    if (accept) accept.addEventListener("click", function () {
+      currentOffer = OFFERS.rescue;
+      resetPromoDeadline();
+      metaTrack("InitiateCheckout", {
+        event_source: "rescue_accept",
+        value: OFFERS.rescue.value,
+      }, "rescue");
+      showForm(prefill);
+    });
+    if (decline) decline.addEventListener("click", forceClose);
+  }
+
   function resetPromoDeadline() {
     promoDeadline = Date.now() + (PROMO_MINUTES * 60 * 1000);
   }
@@ -221,7 +320,7 @@
       el.textContent = time;
     });
     body.querySelectorAll("[data-ckt-expire-text]").forEach(function (el) {
-      el.textContent = remaining <= 0 ? "Oferta encerrada nesta reserva" : "Oferta reservada por";
+      el.textContent = remaining <= 0 ? "Oferta encerrada nesta reserva" : activeOffer().promoText;
     });
     if (remaining <= 0) stopPromoCountdown();
   }
@@ -234,30 +333,32 @@
   }
 
   function promoBlock() {
+    var offer = activeOffer();
     return [
       '<div class="ckt-promo" aria-live="polite">',
-      '  <span class="ckt-promo-badge">PROMOÇÃO</span>',
-      '  <span class="ckt-promo-copy"><span data-ckt-expire-text>Oferta reservada por</span> <strong data-ckt-countdown>12:00</strong></span>',
+      '  <span class="ckt-promo-badge">' + offer.promoBadge + '</span>',
+      '  <span class="ckt-promo-copy"><span data-ckt-expire-text>' + offer.promoText + '</span> <strong data-ckt-countdown>12:00</strong></span>',
       "</div>",
     ].join("");
   }
 
   /* ---------- 1) formulário ---------- */
   function showForm(prefill) {
+    var offer = activeOffer();
     prefill = prefill || {};
     body.innerHTML = [
       promoBlock(),
-      '<div class="ckt-price" aria-label="Preco promocional">',
+      '<div class="ckt-price' + offer.priceTone + '" aria-label="Preco promocional">',
       '  <div class="ckt-price-copy">',
       '    <span class="old">De ' + PRICE_OLD + '</span>',
-      '    <span class="now"><small>Por</small> R$ 29,90</span>',
+      '    <span class="now"><small>Por</small> ' + offer.price + '</span>',
       "  </div>",
-      '  <span class="ckt-price-tag">Oferta ativa</span>',
+      '  <span class="ckt-price-tag">' + offer.tag + '</span>',
       "</div>",
       '<form id="ckt-form" novalidate>',
       '  <div class="ckt-field"><label>Nome completo</label><input name="name" autocomplete="name" placeholder="Seu nome" value="' + esc(prefill.name) + '"></div>',
       '  <div class="ckt-field"><label>E-mail</label><input name="email" type="email" autocomplete="email" placeholder="voce@email.com" value="' + esc(prefill.email) + '"></div>',
-      '  <button class="ckt-btn" type="submit">Gerar PIX e pagar</button>',
+      '  <button class="ckt-btn" type="submit">' + offer.cta + '</button>',
       '  <div class="ckt-msg" id="ckt-msg"></div>',
       '  <div class="ckt-secure"><img src="assets/offer-badges.svg" alt="Compra segura, acesso imediato e 7 dias de garantia" width="270" height="28"></div>',
       "</form>",
@@ -277,9 +378,14 @@
     var data = {
       name: form.name.value.trim(),
       email: form.email.value.trim(),
+      offer: activeOffer().id,
       tracking: getTrackingParameters(),
     };
-    metaTrack("Lead", { event_source: "checkout_form" }, "form");
+    metaTrack("Lead", {
+      event_source: "checkout_form",
+      offer: activeOffer().id,
+      value: activeOffer().value,
+    }, activeOffer().id + "-form");
     msg.textContent = ""; msg.className = "ckt-msg";
     btn.disabled = true; btn.textContent = "Gerando PIX...";
 
@@ -293,20 +399,21 @@
       .catch(function (err) {
         msg.textContent = friendlyCheckoutMessage(err);
         msg.className = "ckt-msg error";
-        btn.disabled = false; btn.textContent = "Gerar PIX e pagar";
+        btn.disabled = false; btn.textContent = activeOffer().cta;
       });
   }
 
   /* ---------- 2) tela PIX ---------- */
   function showPix(p, buyer) {
     var imgSrc = "";
+    var pixPrice = formatPrice(p.value || activeOffer().value);
     if (p.qrCode) imgSrc = /^data:|^https?:/.test(p.qrCode) ? p.qrCode : "data:image/png;base64," + p.qrCode;
 
     body.innerHTML = [
       '<div class="ckt-pix">',
       promoBlock(),
       "  <h4>Escaneie para pagar</h4>",
-      '  <p class="sub">Abra o app do seu banco e pague o PIX de <b>R$ 29,90</b></p>',
+      '  <p class="sub">Abra o app do seu banco e pague o PIX de <b>' + pixPrice + '</b></p>',
       imgSrc ? '  <div class="ckt-qr"><img alt="QR Code PIX" src="' + esc(imgSrc) + '"></div>' : "",
       '  <div class="ckt-copy-wrap"><input id="ckt-payload" readonly value="' + esc(p.qrCodePayload || "") + '"><button class="ckt-copy-btn" type="button" id="ckt-copy">Copiar</button></div>',
       '  <div class="ckt-status" id="ckt-status"><span class="ckt-spin"></span> Aguardando pagamento...</div>',
@@ -343,7 +450,7 @@
               metaTrack("Purchase", {
                 payment_method: "pix",
                 transaction_id: chargeId,
-                value: Number(payment.value || PRODUCT_VALUE),
+                value: Number(payment.value || activeOffer().value),
               }, chargeId);
             }
             showSuccess(s.downloadUrl);

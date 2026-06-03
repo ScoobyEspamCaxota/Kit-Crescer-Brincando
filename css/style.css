@@ -305,7 +305,41 @@ h2.center + *, .eyebrow.center { }
    OFERTA
    ========================================================= */
 .offer { z-index: 2; }
-.offer-box { background: linear-gradient(170deg, #fff, #FFF1E2); border: 2px solid var(--cyan); border-radius: var(--radius-lg); padding: clamp(26px, 6vw, 44px) clamp(20px, 5vw, 40px); text-align: center; box-shadow: var(--shadow-lg); max-width: 640px; margin-inline: auto; }
+.offer-box { position: relative; background: linear-gradient(170deg, #fff, #FFF1E2); border: 2px solid var(--cyan); border-radius: var(--radius-lg); padding: clamp(54px, 8vw, 64px) clamp(20px, 5vw, 40px) clamp(26px, 6vw, 44px); text-align: center; box-shadow: var(--shadow-lg); max-width: 640px; margin-inline: auto; }
+.offer-corner-hint {
+  position: absolute; top: 14px; left: 14px;
+  display: inline-flex; align-items: center; max-width: min(310px, calc(100% - 28px));
+  padding: 7px 11px; border-radius: var(--pill);
+  background: #ef4444; color: #fff;
+  border: 1.5px solid rgba(255,255,255,.52);
+  font-family: var(--font-head); font-size: .78rem; font-weight: 700; line-height: 1;
+  box-shadow: 0 10px 22px rgba(239,68,68,.18);
+  overflow: hidden; isolation: isolate;
+  animation: offer-hint-breathe 4.6s ease-in-out infinite;
+}
+.offer-corner-hint::after {
+  content: ""; position: absolute; inset: -2px auto -2px -42%;
+  width: 34%; pointer-events: none; z-index: -1;
+  background: linear-gradient(100deg, transparent, rgba(255,255,255,.42), transparent);
+  transform: skewX(-18deg);
+  animation: offer-hint-shine 4.6s ease-in-out infinite;
+}
+.offer-corner-hint strong {
+  margin-left: 4px; font-weight: 900; font-variant-numeric: tabular-nums;
+}
+@keyframes offer-hint-breathe {
+  0%, 100% { box-shadow: 0 10px 22px rgba(239,68,68,.18); filter: saturate(1); }
+  45% { box-shadow: 0 14px 30px rgba(239,68,68,.28); filter: saturate(1.08); }
+}
+@keyframes offer-hint-shine {
+  0%, 28% { transform: translateX(0) skewX(-18deg); opacity: 0; }
+  42% { opacity: 1; }
+  62%, 100% { transform: translateX(430%) skewX(-18deg); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .offer-corner-hint { animation: none; }
+  .offer-corner-hint::after { animation: none; display: none; }
+}
 .offer-box h2 { max-width: 22ch; margin: 6px auto 0; }
 .offer-price { display: flex; flex-direction: column; align-items: center; gap: 2px; margin: 18px 0 6px; }
 .price-old { color: var(--muted); text-decoration: line-through; font-weight: 700; }

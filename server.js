@@ -23,6 +23,7 @@ const {
   UTMIFY_IS_TEST = "false",
   DOWNLOAD_URL = "",
   PORT = "3000",
+  DOWNSELL_PRICE = "14.99",
 } = process.env;
 
 const app = express();
@@ -102,6 +103,19 @@ function validBuyer(b) {
 
 function toCents(value) {
   return Math.round(Number(value || 0) * 100);
+}
+
+function moneyValue(value, fallback) {
+  const n = Number(value);
+  return Number.isFinite(n) && n > 0 ? Number(n.toFixed(2)) : fallback;
+}
+
+function resolveOffer(offerId) {
+  const id = String(offerId || "main").toLowerCase();
+  if (id === "rescue" || id === "downsell") {
+    return { id: "rescue", value: moneyValue(DOWNSELL_PRICE, 14.99) };
+  }
+  return { id: "main", value: moneyValue(PRICE, 29.9) };
 }
 
 function formatUtcForUtmify(value) {
@@ -290,13 +304,14 @@ app.post("/api/checkout", async (req, res) => {
     const err = validBuyer(buyer);
     if (err) return res.status(400).json({ error: err });
 
+    const offer = resolveOffer(buyer.offer);
     const phone = onlyDigits(buyer.phone);
 
     // cobrança PIX SEM cliente (sem CPF — maior conversão).
     // Sem customerId, a gateway usa o documento da loja associado ao token.
     // preço definido pelo SERVIDOR — nunca confiar no cliente.
-    const value = Number(PRICE);
-    const externalReference = "CB-" + Date.now();
+    const value = offer.value;
+    const externalReference = (offer.id === "rescue" ? "CBR-" : "CB-") + Date.now();
     const charge = await qpFetch("/api/v1/charges/pix", {
       method: "POST",
       body: { value, externalReference },
@@ -314,6 +329,7 @@ app.post("/api/checkout", async (req, res) => {
       chargeId: c.chargeId,
       correlationID: c.correlationID || externalReference,
       externalReference,
+      offer: offer.id,
       status: "ACTIVE",
       value,
       buyer: { name: buyer.name, email: buyer.email, phone },
@@ -331,6 +347,7 @@ app.post("/api/checkout", async (req, res) => {
       qrCodePayload: c.qrCodePayload || "", // copia-e-cola EMV
       paymentLink: c.paymentLink || "",
       value,
+      offer: offer.id,
       product: PRODUCT,
     });
   } catch (e) {

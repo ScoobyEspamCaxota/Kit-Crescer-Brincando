@@ -48,6 +48,21 @@
     if (countEl) countEl.textContent = String(value);
   });
 
+  /* ---- chance de oferta no check-in por sessão ---- */
+  d.querySelectorAll("[data-offer-chance]").forEach(function (chanceEl) {
+    var min = 47;
+    var max = 100;
+    var storageKey = "cb_offer_chance";
+    var chance = null;
+
+    try { chance = Number(sessionStorage.getItem(storageKey)); } catch (_) {}
+    if (!chance || chance < min || chance > max) {
+      chance = Math.floor(Math.random() * (max - min + 1)) + min;
+      try { sessionStorage.setItem(storageKey, String(chance)); } catch (_) {}
+    }
+    chanceEl.textContent = String(chance) + "%";
+  });
+
   /* ---- carrossel de depoimentos ---- */
   d.querySelectorAll("[data-depo-carousel]").forEach(function (carousel) {
     var track = carousel.querySelector("[data-depo-track]");

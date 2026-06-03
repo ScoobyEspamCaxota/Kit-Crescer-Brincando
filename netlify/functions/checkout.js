@@ -1,7 +1,6 @@
 "use strict";
 
 const {
-  PRICE,
   PRODUCT,
   connectBlobs,
   getClientIp,
@@ -11,6 +10,7 @@ const {
   onlyDigits,
   parseJsonBody,
   qpFetch,
+  resolveOffer,
   saveOrder,
   validBuyer,
 } = require("./_shared");
@@ -26,9 +26,10 @@ exports.handler = async (event) => {
     const err = validBuyer(buyer);
     if (err) return json(400, { error: err });
 
+    const offer = resolveOffer(buyer.offer);
     const phone = onlyDigits(buyer.phone);
-    const value = Number(PRICE);
-    const externalReference = "CB-" + Date.now();
+    const value = offer.value;
+    const externalReference = (offer.id === "rescue" ? "CBR-" : "CB-") + Date.now();
     const charge = await qpFetch("/api/v1/charges/pix", {
       method: "POST",
       body: { value, externalReference },
@@ -46,6 +47,7 @@ exports.handler = async (event) => {
       chargeId: c.chargeId,
       correlationID: c.correlationID || externalReference,
       externalReference,
+      offer: offer.id,
       status: "ACTIVE",
       value,
       buyer: { name: buyer.name, email: buyer.email, phone },
@@ -62,6 +64,7 @@ exports.handler = async (event) => {
       qrCodePayload: c.qrCodePayload || "",
       paymentLink: c.paymentLink || "",
       value,
+      offer: offer.id,
       product: PRODUCT,
     });
   } catch (e) {

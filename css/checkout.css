@@ -85,6 +85,66 @@
   border: 1px solid #b9ebcf;
   font-size: .72rem; font-weight: 900; line-height: 1; white-space: nowrap;
 }
+.ckt-price--rescue {
+  border-color: #ffd1d1;
+  background: linear-gradient(135deg, #fff4f4, #ffffff);
+}
+.ckt-price--rescue .now { color: #ef4444; }
+.ckt-price--rescue .ckt-price-tag {
+  background: #fff4f4; color: #b91c1c; border-color: #fecaca;
+}
+
+.ckt-rescue { text-align: center; padding: 4px 0 2px; }
+.ckt-rescue-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  margin-bottom: 12px; padding: 6px 12px; border-radius: 999px;
+  background: #ef4444; color: #fff;
+  font-size: .72rem; font-weight: 900; letter-spacing: .04em; text-transform: uppercase;
+  box-shadow: 0 8px 18px rgba(239,68,68,.2);
+}
+.ckt-rescue h4 {
+  margin: 0 auto 8px; max-width: 18ch;
+  color: #4a3b31; font-size: 1.35rem; line-height: 1.08; font-weight: 900;
+}
+.ckt-rescue p {
+  margin: 0 auto 14px; max-width: 34ch;
+  color: #66737d; font-size: .88rem; line-height: 1.45;
+}
+.ckt-rescue-price {
+  display: grid; place-items: center; gap: 2px;
+  margin: 0 auto 14px; padding: 13px 16px; max-width: 250px;
+  border-radius: 18px; border: 1.5px solid #ffd1d1;
+  background: linear-gradient(135deg, #fff4f4, #fffaf0);
+}
+.ckt-rescue-price span {
+  color: #8b99a4; text-decoration: line-through; font-size: .86rem; font-weight: 800;
+}
+.ckt-rescue-price strong {
+  color: #ef4444; font-size: 2.35rem; line-height: 1; font-weight: 950;
+}
+.ckt-rescue-list {
+  display: grid; gap: 7px; margin: 0 auto 16px; padding: 0; max-width: 300px;
+  list-style: none; color: #46555f; text-align: left; font-size: .86rem; font-weight: 800;
+}
+.ckt-rescue-list li {
+  position: relative; padding-left: 22px;
+}
+.ckt-rescue-list li::before {
+  content: ""; position: absolute; left: 0; top: .6em;
+  width: 9px; height: 9px; border-radius: 50%;
+  background: #22c55e; box-shadow: 0 0 0 4px rgba(34,197,94,.14);
+}
+.ckt-rescue-accept {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  box-shadow: 0 8px 20px rgba(220,38,38,.28);
+}
+.ckt-link-btn {
+  display: inline-flex; justify-content: center; align-items: center;
+  width: 100%; margin-top: 12px; padding: 8px;
+  border: 0; background: transparent; color: #7a8790;
+  font-family: inherit; font-size: .84rem; font-weight: 800; cursor: pointer;
+}
+.ckt-link-btn:hover { color: #46555f; text-decoration: underline; }
 
 .ckt-field { margin-bottom: 12px; }
 .ckt-field label { display: block; font-size: .8rem; font-weight: 700; color: #46555f; margin-bottom: 5px; }

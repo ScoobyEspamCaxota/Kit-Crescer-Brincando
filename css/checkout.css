@@ -29,8 +29,8 @@
   color: #fff; padding: 18px 22px; border-radius: 22px 22px 0 0;
   position: relative;
 }
-.ckt-head h3 { margin: 0; font-size: 1.15rem; font-weight: 800; }
-.ckt-head p { margin: 2px 0 0; font-size: .82rem; opacity: .9; }
+.ckt-head h3 { margin: 0; color: #fff; font-size: 1.15rem; font-weight: 800; }
+.ckt-head p { margin: 2px 0 0; color: #fff; font-size: .82rem; opacity: .9; }
 .ckt-close {
   position: absolute; top: 12px; right: 14px;
   background: rgba(255,255,255,.2); border: 0; color: #fff;
@@ -41,12 +41,50 @@
 
 .ckt-body { padding: 20px 22px 24px; }
 
-.ckt-price {
-  display: flex; align-items: baseline; gap: 8px;
-  margin-bottom: 16px;
+.ckt-promo {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  margin-bottom: 12px; padding: 10px 12px;
+  border: 1.5px solid #ffd1d1; border-radius: 14px;
+  background: linear-gradient(135deg, #fff4f4, #fffaf0);
 }
-.ckt-price .old { color: #9aa3ab; text-decoration: line-through; font-size: .95rem; }
-.ckt-price .now { color: #15A34A; font-weight: 800; font-size: 1.7rem; }
+.ckt-promo-badge {
+  flex: none; display: inline-flex; align-items: center; justify-content: center;
+  padding: 5px 10px; border-radius: 999px;
+  background: #ef4444; color: #fff;
+  font-size: .72rem; font-weight: 900; letter-spacing: .04em;
+  box-shadow: 0 6px 14px rgba(239,68,68,.22);
+}
+.ckt-promo-copy {
+  color: #7f1d1d; font-size: .82rem; font-weight: 800; text-align: right;
+}
+.ckt-promo-copy strong {
+  color: #dc2626; font-variant-numeric: tabular-nums;
+}
+
+.ckt-price {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  margin-bottom: 16px; padding: 12px 14px;
+  border: 1.5px solid #d9f3e4; border-radius: 16px;
+  background: linear-gradient(135deg, #f3fff7, #ffffff);
+}
+.ckt-price-copy { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.ckt-price .old {
+  color: #8b99a4; text-decoration: line-through; font-size: .86rem; font-weight: 700;
+}
+.ckt-price .now {
+  display: inline-flex; align-items: baseline; gap: 6px;
+  color: #15A34A; font-weight: 900; font-size: 1.8rem; line-height: 1;
+  letter-spacing: 0;
+}
+.ckt-price .now small {
+  color: #46555f; font-size: .78rem; font-weight: 800;
+}
+.ckt-price-tag {
+  flex: none; border-radius: 999px; padding: 6px 10px;
+  background: #e9fbf0; color: #138a47;
+  border: 1px solid #b9ebcf;
+  font-size: .72rem; font-weight: 900; line-height: 1; white-space: nowrap;
+}
 
 .ckt-field { margin-bottom: 12px; }
 .ckt-field label { display: block; font-size: .8rem; font-weight: 700; color: #46555f; margin-bottom: 5px; }
@@ -132,4 +170,9 @@
 @media (prefers-reduced-motion: reduce) {
   .ckt-backdrop.open, .ckt-modal, .ckt-success .check { animation: none; }
   .ckt-spin { animation-duration: 1.6s; }
+}
+
+@media (max-width: 390px) {
+  .ckt-promo { align-items: flex-start; flex-direction: column; }
+  .ckt-promo-copy { text-align: left; }
 }

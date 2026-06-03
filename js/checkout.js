@@ -6,11 +6,14 @@
 (function () {
   "use strict";
 
-  var PRICE_OLD = "R$ 97,00";
+  var PRICE_OLD = "R$ 97,90";
   var PRODUCT_NAME = "Kit Crescer Brincando";
   var PRODUCT_ID = "kit-crescer-brincando";
   var PRODUCT_VALUE = 29.9;
   var pollTimer = null;
+  var promoTimer = null;
+  var promoDeadline = null;
+  var PROMO_MINUTES = 12;
   var purchaseTracked = {};
   var CHECKOUT_TIMEOUT_MS = 25000;
 
@@ -71,26 +74,18 @@
   function open() {
     metaTrack("InitiateCheckout", {}, "open");
     backdrop.classList.add("open");
+    resetPromoDeadline();
     showForm();
   }
   function close() {
     backdrop.classList.remove("open");
     if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+    stopPromoCountdown();
+    promoDeadline = null;
   }
   backdrop.querySelector(".ckt-close").addEventListener("click", close);
   backdrop.addEventListener("click", function (e) { if (e.target === backdrop) close(); });
   document.addEventListener("keydown", function (e) { if (e.key === "Escape") close(); });
-
-  /* ---------- máscaras leves ---------- */
-  function maskCPF(v) {
-    v = v.replace(/\D/g, "").slice(0, 11);
-    return v.replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d{1,2})$/, "$1-$2");
-  }
-  function maskPhone(v) {
-    v = v.replace(/\D/g, "").slice(0, 11);
-    if (v.length <= 10) return v.replace(/(\d{2})(\d)/, "($1) $2").replace(/(\d{4})(\d)/, "$1-$2");
-    return v.replace(/(\d{2})(\d)/, "($1) $2").replace(/(\d{5})(\d)/, "$1-$2");
-  }
 
   function getTrackingParameters() {
     var keys = ["src", "sck", "utm_source", "utm_campaign", "utm_medium", "utm_content", "utm_term"];
@@ -201,15 +196,67 @@
       });
   }
 
+  function resetPromoDeadline() {
+    promoDeadline = Date.now() + (PROMO_MINUTES * 60 * 1000);
+  }
+
+  function stopPromoCountdown() {
+    if (promoTimer) {
+      clearInterval(promoTimer);
+      promoTimer = null;
+    }
+  }
+
+  function formatCountdown(ms) {
+    var total = Math.max(0, Math.ceil(ms / 1000));
+    var minutes = String(Math.floor(total / 60)).padStart(2, "0");
+    var seconds = String(total % 60).padStart(2, "0");
+    return minutes + ":" + seconds;
+  }
+
+  function updatePromoCountdown() {
+    var remaining = (promoDeadline || Date.now()) - Date.now();
+    var time = formatCountdown(remaining);
+    body.querySelectorAll("[data-ckt-countdown]").forEach(function (el) {
+      el.textContent = time;
+    });
+    body.querySelectorAll("[data-ckt-expire-text]").forEach(function (el) {
+      el.textContent = remaining <= 0 ? "Oferta encerrada nesta reserva" : "Oferta reservada por";
+    });
+    if (remaining <= 0) stopPromoCountdown();
+  }
+
+  function startPromoCountdown() {
+    stopPromoCountdown();
+    if (!promoDeadline) resetPromoDeadline();
+    updatePromoCountdown();
+    promoTimer = setInterval(updatePromoCountdown, 1000);
+  }
+
+  function promoBlock() {
+    return [
+      '<div class="ckt-promo" aria-live="polite">',
+      '  <span class="ckt-promo-badge">PROMOÇÃO</span>',
+      '  <span class="ckt-promo-copy"><span data-ckt-expire-text>Oferta reservada por</span> <strong data-ckt-countdown>12:00</strong></span>',
+      "</div>",
+    ].join("");
+  }
+
   /* ---------- 1) formulário ---------- */
   function showForm(prefill) {
     prefill = prefill || {};
     body.innerHTML = [
-      '<div class="ckt-price"><span class="old">' + PRICE_OLD + '</span><span class="now">R$ 29,90</span></div>',
+      promoBlock(),
+      '<div class="ckt-price" aria-label="Preco promocional">',
+      '  <div class="ckt-price-copy">',
+      '    <span class="old">De ' + PRICE_OLD + '</span>',
+      '    <span class="now"><small>Por</small> R$ 29,90</span>',
+      "  </div>",
+      '  <span class="ckt-price-tag">Oferta ativa</span>',
+      "</div>",
       '<form id="ckt-form" novalidate>',
       '  <div class="ckt-field"><label>Nome completo</label><input name="name" autocomplete="name" placeholder="Seu nome" value="' + esc(prefill.name) + '"></div>',
       '  <div class="ckt-field"><label>E-mail</label><input name="email" type="email" autocomplete="email" placeholder="voce@email.com" value="' + esc(prefill.email) + '"></div>',
-      '  <div class="ckt-field"><label>Telefone (com DDD)</label><input name="phone" inputmode="numeric" placeholder="(11) 99999-9999" value="' + esc(prefill.phone) + '"></div>',
       '  <button class="ckt-btn" type="submit">Gerar PIX e pagar</button>',
       '  <div class="ckt-msg" id="ckt-msg"></div>',
       '  <div class="ckt-secure"><img src="assets/offer-badges.svg" alt="Compra segura, acesso imediato e 7 dias de garantia" width="270" height="28"></div>',
@@ -217,9 +264,8 @@
     ].join("");
 
     var form = body.querySelector("#ckt-form");
-    var phone = form.phone;
-    phone.addEventListener("input", function () { phone.value = maskPhone(phone.value); });
     form.addEventListener("submit", submitForm);
+    startPromoCountdown();
     setTimeout(function () { form.name.focus(); }, 50);
   }
 
@@ -231,7 +277,6 @@
     var data = {
       name: form.name.value.trim(),
       email: form.email.value.trim(),
-      phone: form.phone.value,
       tracking: getTrackingParameters(),
     };
     metaTrack("Lead", { event_source: "checkout_form" }, "form");
@@ -259,6 +304,7 @@
 
     body.innerHTML = [
       '<div class="ckt-pix">',
+      promoBlock(),
       "  <h4>Escaneie para pagar</h4>",
       '  <p class="sub">Abra o app do seu banco e pague o PIX de <b>R$ 29,90</b></p>',
       imgSrc ? '  <div class="ckt-qr"><img alt="QR Code PIX" src="' + esc(imgSrc) + '"></div>' : "",
@@ -277,6 +323,7 @@
     });
 
     startPolling(p);
+    startPromoCountdown();
   }
 
   /* ---------- 3) polling do status ---------- */
@@ -308,6 +355,7 @@
 
   /* ---------- 4) sucesso ---------- */
   function showSuccess(downloadUrl) {
+    stopPromoCountdown();
     body.innerHTML = [
       '<div class="ckt-success">',
       '  <div class="check"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l4 4 10-11" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>',

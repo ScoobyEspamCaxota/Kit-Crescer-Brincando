@@ -95,10 +95,8 @@ const TRACKING_KEYS = [
 function validBuyer(b) {
   const name = String(b.name || "").trim();
   const email = String(b.email || "").trim();
-  const phone = onlyDigits(b.phone);
   if (name.length < 3) return "Informe o nome completo.";
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return "E-mail inválido.";
-  if (phone.length < 10 || phone.length > 13) return "Telefone inválido (com DDD).";
   return null;
 }
 

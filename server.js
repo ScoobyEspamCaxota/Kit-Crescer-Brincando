@@ -1,5 +1,5 @@
 /* =========================================================
-   Crescer Brincando — backend de pagamento (QuacPay PIX)
+   Arraiá Lucrativo — backend de pagamento (QuacPay PIX)
    Serve o site estático + rotas /api.
    Credenciais ficam SÓ aqui (backend), nunca no frontend.
    ========================================================= */
@@ -15,8 +15,10 @@ const {
   QP_CLIENT_ID = "",
   QP_CLIENT_SECRET = "",
   QP_WEBHOOK_SECRET = "",
-  PRICE = "29.90",
-  PRODUCT = "Kit Crescer Brincando",
+  PRICE = "17.90",
+  PRODUCT = "Kit Receitas Juninas Lucrativas",
+  BUMP_PRICE = "9.90",
+  BUMP_PRODUCT = "Kit de Divulgação e Precificação",
   UTMIFY_API_TOKEN = "",
   UTMIFY_ENDPOINT = "https://api.utmify.com.br/api-credentials/orders",
   UTMIFY_PLATFORM = "QuacPay",
@@ -115,7 +117,27 @@ function resolveOffer(offerId) {
   if (id === "rescue" || id === "downsell") {
     return { id: "rescue", value: moneyValue(DOWNSELL_PRICE, 14.99) };
   }
-  return { id: "main", value: moneyValue(PRICE, 29.9) };
+  return { id: "main", value: moneyValue(PRICE, 17.9) };
+}
+
+function resolveAddons(input = {}) {
+  if (!input.bump) return [];
+  return [{
+    id: "kit-divulgacao-precificacao",
+    name: BUMP_PRODUCT,
+    value: moneyValue(BUMP_PRICE, 9.9),
+  }];
+}
+
+function resolveCheckoutPricing(offerId, input = {}) {
+  const offer = resolveOffer(offerId);
+  const addons = resolveAddons(input);
+  const addonValue = addons.reduce((sum, addon) => sum + addon.value, 0);
+  return {
+    offer,
+    addons,
+    value: Number((offer.value + addonValue).toFixed(2)),
+  };
 }
 
 function formatUtcForUtmify(value) {
@@ -160,13 +182,21 @@ function buildUtmifyPayload(order, status) {
     },
     products: [
       {
-        id: "kit-crescer-brincando",
+        id: "kit-receitas-juninas-lucrativas",
         name: PRODUCT,
         planId: null,
         planName: null,
         quantity: 1,
-        priceInCents: totalPriceInCents,
+        priceInCents: toCents(order.offerValue || order.value),
       },
+      ...(order.addons || []).map((addon) => ({
+        id: addon.id,
+        name: addon.name,
+        planId: null,
+        planName: null,
+        quantity: 1,
+        priceInCents: toCents(addon.value),
+      })),
     ],
     trackingParameters: normalizeTracking(order.tracking),
     commission: {
@@ -304,14 +334,14 @@ app.post("/api/checkout", async (req, res) => {
     const err = validBuyer(buyer);
     if (err) return res.status(400).json({ error: err });
 
-    const offer = resolveOffer(buyer.offer);
+    const pricing = resolveCheckoutPricing(buyer.offer, { bump: buyer.bump });
+    const { offer, addons, value } = pricing;
     const phone = onlyDigits(buyer.phone);
 
     // cobrança PIX SEM cliente (sem CPF — maior conversão).
     // Sem customerId, a gateway usa o documento da loja associado ao token.
     // preço definido pelo SERVIDOR — nunca confiar no cliente.
-    const value = offer.value;
-    const externalReference = (offer.id === "rescue" ? "CBR-" : "CB-") + Date.now();
+    const externalReference = (offer.id === "rescue" ? "RJR-" : "RJ-") + Date.now();
     const charge = await qpFetch("/api/v1/charges/pix", {
       method: "POST",
       body: { value, externalReference },
@@ -330,8 +360,10 @@ app.post("/api/checkout", async (req, res) => {
       correlationID: c.correlationID || externalReference,
       externalReference,
       offer: offer.id,
+      addons,
       status: "ACTIVE",
       value,
+      offerValue: offer.value,
       buyer: { name: buyer.name, email: buyer.email, phone },
       tracking: normalizeTracking(buyer.tracking),
       ip: getClientIp(req),
@@ -348,6 +380,7 @@ app.post("/api/checkout", async (req, res) => {
       paymentLink: c.paymentLink || "",
       value,
       offer: offer.id,
+      addons,
       product: PRODUCT,
     });
   } catch (e) {
@@ -438,7 +471,7 @@ app.use(express.static(ROOT, {
 }));
 
 app.listen(Number(PORT), () => {
-  console.log(`\n  Crescer Brincando rodando em http://localhost:${PORT}`);
+  console.log(`\n  Arraiá Lucrativo rodando em http://localhost:${PORT}`);
   if (!QP_CLIENT_ID || !QP_CLIENT_SECRET) {
     console.log("  ⚠  Preencha QP_CLIENT_ID e QP_CLIENT_SECRET no arquivo .env para o pagamento funcionar.\n");
   } else {

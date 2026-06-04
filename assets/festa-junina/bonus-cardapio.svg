@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 510">
+  <rect width="680" height="510" rx="34" fill="#fff3cf"/>
+  <path d="M56 72c130 70 360 70 488 0" fill="none" stroke="#7a2e1f" stroke-width="7" stroke-linecap="round"/>
+  <rect x="110" y="118" width="460" height="330" rx="28" fill="#fff" stroke="#e43d30" stroke-width="6"/>
+  <text x="340" y="184" text-anchor="middle" font-family="Arial, sans-serif" font-size="36" font-weight="900" fill="#7a2e1f">Cardápio para WhatsApp</text>
+  <text x="160" y="250" font-family="Arial, sans-serif" font-size="26" fill="#4a3326">Canjica • Arroz doce • Bolo</text>
+  <text x="160" y="306" font-family="Arial, sans-serif" font-size="26" fill="#4a3326">Paçoca • Curau • Combo junino</text>
+  <rect x="192" y="360" width="296" height="52" rx="26" fill="#168a4a"/>
+  <text x="340" y="395" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="900" fill="#fff">pronto para divulgar</text>
+</svg>

@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 850" role="img" aria-labelledby="t d">
+  <title id="t">Kit Receitas Juninas Lucrativas</title>
+  <desc id="d">Capa do produto digital de receitas juninas saudáveis para vender e fazer renda extra.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff8e7"/>
+      <stop offset=".55" stop-color="#ffe5b8"/>
+      <stop offset="1" stop-color="#dff4e6"/>
+    </linearGradient>
+    <filter id="s" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="16" stdDeviation="16" flood-color="#7a2e1f" flood-opacity=".18"/>
+    </filter>
+  </defs>
+  <rect width="680" height="850" rx="44" fill="url(#bg)"/>
+  <path d="M70 92c120 74 390 74 540 0" fill="none" stroke="#7a2e1f" stroke-width="7" stroke-linecap="round"/>
+  <g transform="translate(112 98)">
+    <path d="M0 0h54l-27 46z" fill="#e43d30"/>
+    <path d="M92 8h54l-27 46z" fill="#168a4a"/>
+    <path d="M184 12h54l-27 46z" fill="#2c9dc5"/>
+    <path d="M276 8h54l-27 46z" fill="#f7b32b"/>
+    <path d="M368 0h54l-27 46z" fill="#e43d30"/>
+  </g>
+  <g filter="url(#s)">
+    <rect x="92" y="166" width="496" height="606" rx="34" fill="#fffdf8"/>
+    <rect x="118" y="192" width="444" height="554" rx="24" fill="#fff7e8" stroke="#f1c270" stroke-width="4"/>
+  </g>
+  <text x="340" y="264" text-anchor="middle" font-family="Arial, sans-serif" font-size="38" font-weight="800" fill="#7a2e1f">Kit Receitas</text>
+  <text x="340" y="315" text-anchor="middle" font-family="Arial, sans-serif" font-size="47" font-weight="900" fill="#e43d30">Juninas Lucrativas</text>
+  <text x="340" y="366" text-anchor="middle" font-family="Arial, sans-serif" font-size="23" font-weight="700" fill="#168a4a">saudáveis para fazer e vender</text>
+  <g transform="translate(154 430)">
+    <ellipse cx="95" cy="176" rx="94" ry="34" fill="#e8c183"/>
+    <path d="M18 88c16-58 153-58 170 0 18 66-30 116-94 116S0 154 18 88z" fill="#fff3cf" stroke="#7a2e1f" stroke-width="6"/>
+    <circle cx="78" cy="118" r="12" fill="#f7b32b"/>
+    <circle cx="116" cy="126" r="13" fill="#f7b32b"/>
+    <circle cx="98" cy="152" r="11" fill="#f7b32b"/>
+    <path d="M46 79c35 19 75 19 116 0" fill="none" stroke="#7a2e1f" stroke-width="5" stroke-linecap="round"/>
+  </g>
+  <g transform="translate(380 455)">
+    <rect x="24" y="80" width="138" height="120" rx="22" fill="#f7b32b" stroke="#7a2e1f" stroke-width="6"/>
+    <path d="M24 118h138" stroke="#7a2e1f" stroke-width="5"/>
+    <path d="M44 76c4-45 76-45 84 0" fill="#e43d30"/>
+    <circle cx="69" cy="64" r="16" fill="#fff"/>
+    <circle cx="104" cy="60" r="16" fill="#fff"/>
+  </g>
+  <rect x="150" y="676" width="380" height="58" rx="29" fill="#168a4a"/>
+  <text x="340" y="714" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="800" fill="#fff">PDF + precificação + divulgação</text>
+</svg>

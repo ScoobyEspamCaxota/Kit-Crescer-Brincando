@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 510">
+  <rect width="680" height="510" rx="34" fill="#f2fbef"/>
+  <rect x="98" y="64" width="484" height="382" rx="30" fill="#fff" stroke="#168a4a" stroke-width="6"/>
+  <text x="340" y="132" text-anchor="middle" font-family="Arial, sans-serif" font-size="38" font-weight="900" fill="#7a2e1f">Lista de Compras</text>
+  <g font-family="Arial, sans-serif" font-size="26" fill="#4a3326">
+    <text x="150" y="214">✓ milho, leite, coco</text>
+    <text x="150" y="274">✓ amendoim e chocolate</text>
+    <text x="150" y="334">✓ potinhos e etiquetas</text>
+    <text x="150" y="394">✓ embalagem para entrega</text>
+  </g>
+</svg>

@@ -1,7 +1,8 @@
-# Kit Crescer Brincando
+# Kit Receitas Juninas Lucrativas
 
-Landing page de venda do Kit Crescer Brincando, com checkout PIX via QuacPay,
-tracking da Utmify e eventos do Meta Pixel.
+Landing page de venda do Kit Receitas Juninas Lucrativas, com checkout PIX via
+QuacPay, order bump de divulgação/precificação, tracking da Utmify e eventos do
+Meta Pixel.
 
 ## Rodar localmente
 
@@ -19,6 +20,10 @@ Copie `.env.example` para `.env` e preencha as credenciais reais:
 - `QP_CLIENT_ID`
 - `QP_CLIENT_SECRET`
 - `QP_WEBHOOK_SECRET`
+- `PRICE`
+- `PRODUCT`
+- `BUMP_PRICE`
+- `BUMP_PRODUCT`
 - `UTMIFY_API_TOKEN`
 
 Nunca publique o arquivo `.env`.

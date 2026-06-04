@@ -8,8 +8,10 @@ const {
   QP_CLIENT_ID = "",
   QP_CLIENT_SECRET = "",
   QP_WEBHOOK_SECRET = "",
-  PRICE = "29.90",
-  PRODUCT = "Kit Crescer Brincando",
+  PRICE = "17.90",
+  PRODUCT = "Kit Receitas Juninas Lucrativas",
+  BUMP_PRICE = "9.90",
+  BUMP_PRODUCT = "Kit de Divulgação e Precificação",
   UTMIFY_API_TOKEN = "",
   UTMIFY_ENDPOINT = "https://api.utmify.com.br/api-credentials/orders",
   UTMIFY_PLATFORM = "QuacPay",
@@ -241,7 +243,27 @@ function resolveOffer(offerId) {
   if (id === "rescue" || id === "downsell") {
     return { id: "rescue", value: moneyValue(DOWNSELL_PRICE, 14.99) };
   }
-  return { id: "main", value: moneyValue(PRICE, 29.9) };
+  return { id: "main", value: moneyValue(PRICE, 17.9) };
+}
+
+function resolveAddons(input = {}) {
+  if (!input.bump) return [];
+  return [{
+    id: "kit-divulgacao-precificacao",
+    name: BUMP_PRODUCT,
+    value: moneyValue(BUMP_PRICE, 9.9),
+  }];
+}
+
+function resolveCheckoutPricing(offerId, input = {}) {
+  const offer = resolveOffer(offerId);
+  const addons = resolveAddons(input);
+  const addonValue = addons.reduce((sum, addon) => sum + addon.value, 0);
+  return {
+    offer,
+    addons,
+    value: Number((offer.value + addonValue).toFixed(2)),
+  };
 }
 
 function formatUtcForUtmify(value) {
@@ -271,13 +293,21 @@ function buildUtmifyPayload(order, status) {
     },
     products: [
       {
-        id: "kit-crescer-brincando",
+        id: "kit-receitas-juninas-lucrativas",
         name: PRODUCT,
         planId: null,
         planName: null,
         quantity: 1,
-        priceInCents: totalPriceInCents,
+        priceInCents: toCents(order.offerValue || order.value),
       },
+      ...(order.addons || []).map((addon) => ({
+        id: addon.id,
+        name: addon.name,
+        planId: null,
+        planName: null,
+        quantity: 1,
+        priceInCents: toCents(addon.value),
+      })),
     ],
     trackingParameters: normalizeTracking(order.tracking),
     commission: {
@@ -360,6 +390,7 @@ module.exports = {
   parseJsonBody,
   qpFetch,
   rawBody,
+  resolveCheckoutPricing,
   resolveOffer,
   saveOrder,
   validBuyer,

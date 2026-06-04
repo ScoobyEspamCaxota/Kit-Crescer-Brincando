@@ -1,5 +1,5 @@
 /* =========================================================
-   Crescer Brincando — enhancement (reveal ao rolar)
+   Arraiá Lucrativo — enhancement (reveal ao rolar)
    Progressivo: se algo falhar, remove .enhanced (tudo visível).
    ========================================================= */
 (function () {

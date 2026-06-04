@@ -10,7 +10,7 @@ const {
   onlyDigits,
   parseJsonBody,
   qpFetch,
-  resolveOffer,
+  resolveCheckoutPricing,
   saveOrder,
   validBuyer,
 } = require("./_shared");
@@ -26,10 +26,10 @@ exports.handler = async (event) => {
     const err = validBuyer(buyer);
     if (err) return json(400, { error: err });
 
-    const offer = resolveOffer(buyer.offer);
+    const pricing = resolveCheckoutPricing(buyer.offer, { bump: buyer.bump });
+    const { offer, addons, value } = pricing;
     const phone = onlyDigits(buyer.phone);
-    const value = offer.value;
-    const externalReference = (offer.id === "rescue" ? "CBR-" : "CB-") + Date.now();
+    const externalReference = (offer.id === "rescue" ? "RJR-" : "RJ-") + Date.now();
     const charge = await qpFetch("/api/v1/charges/pix", {
       method: "POST",
       body: { value, externalReference },
@@ -48,8 +48,10 @@ exports.handler = async (event) => {
       correlationID: c.correlationID || externalReference,
       externalReference,
       offer: offer.id,
+      addons,
       status: "ACTIVE",
       value,
+      offerValue: offer.value,
       buyer: { name: buyer.name, email: buyer.email, phone },
       tracking: normalizeTracking(buyer.tracking),
       ip: getClientIp(event),
@@ -65,6 +67,7 @@ exports.handler = async (event) => {
       paymentLink: c.paymentLink || "",
       value,
       offer: offer.id,
+      addons,
       product: PRODUCT,
     });
   } catch (e) {

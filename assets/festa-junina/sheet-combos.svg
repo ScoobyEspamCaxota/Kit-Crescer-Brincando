@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 850">
+  <rect width="680" height="850" rx="36" fill="#fff8e7"/>
+  <rect x="42" y="42" width="596" height="766" rx="28" fill="#fff" stroke="#e43d30" stroke-width="5"/>
+  <text x="340" y="112" text-anchor="middle" font-family="Arial, sans-serif" font-size="40" font-weight="900" fill="#7a2e1f">Combos Saudáveis</text>
+  <text x="340" y="154" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#168a4a">transforme receita em renda</text>
+  <g transform="translate(124 254)" font-family="Arial, sans-serif">
+    <rect width="432" height="330" rx="28" fill="#fff3cf" stroke="#7a2e1f" stroke-width="7"/>
+    <text x="44" y="74" font-size="28" font-weight="900" fill="#e43d30">Cardápio Saudável</text>
+    <text x="44" y="130" font-size="24" fill="#4a3326">✓ Canjica no pote</text>
+    <text x="44" y="184" font-size="24" fill="#4a3326">✓ Bolo de milho fatiado</text>
+    <text x="44" y="238" font-size="24" fill="#4a3326">✓ Paçoca banhada</text>
+    <text x="44" y="292" font-size="24" fill="#4a3326">✓ Kit docinho junino</text>
+  </g>
+  <g font-family="Arial, sans-serif" font-size="24" fill="#4a3326">
+    <text x="112" y="660">✓ ideias de preço e embalagem</text>
+    <text x="112" y="708">✓ venda por encomenda no WhatsApp</text>
+  </g>
+</svg>

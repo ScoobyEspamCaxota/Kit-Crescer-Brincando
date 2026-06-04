@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 850">
+  <rect width="680" height="850" rx="36" fill="#eef9ff"/>
+  <rect x="42" y="42" width="596" height="766" rx="28" fill="#fff" stroke="#8bcde1" stroke-width="5"/>
+  <text x="340" y="112" text-anchor="middle" font-family="Arial, sans-serif" font-size="42" font-weight="900" fill="#7a2e1f">Arroz Doce Sem Leite</text>
+  <text x="340" y="154" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#2c9dc5">cremoso com canela</text>
+  <ellipse cx="340" cy="508" rx="174" ry="54" fill="#c7a16f"/>
+  <path d="M160 328c24-96 328-96 352 0 18 94-82 164-176 164s-194-70-176-164z" fill="#fff6df" stroke="#7a2e1f" stroke-width="8"/>
+  <path d="M220 316c80 48 202 48 284 0" fill="none" stroke="#7a2e1f" stroke-width="7" stroke-linecap="round"/>
+  <path d="M256 370l58 34m48-38l64 38m-134 38l78 36" stroke="#b66b36" stroke-width="8" stroke-linecap="round"/>
+  <g font-family="Arial, sans-serif" font-size="24" fill="#4a3326">
+    <text x="112" y="620">✓ ponto cremoso e brilhante</text>
+    <text x="112" y="668">✓ alternativa sem leite animal</text>
+    <text x="112" y="716">✓ ideia de venda: copinhos decorados</text>
+  </g>
+</svg>

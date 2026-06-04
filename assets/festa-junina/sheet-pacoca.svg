@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 850">
+  <rect width="680" height="850" rx="36" fill="#fff4ea"/>
+  <rect x="42" y="42" width="596" height="766" rx="28" fill="#fff" stroke="#f2a36d" stroke-width="5"/>
+  <text x="340" y="112" text-anchor="middle" font-family="Arial, sans-serif" font-size="38" font-weight="900" fill="#7a2e1f">Paçoca no Chocolate 70%</text>
+  <text x="340" y="154" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#e43d30">pequena, bonita e lucrativa</text>
+  <g transform="translate(160 280)">
+    <rect x="0" y="40" width="360" height="184" rx="34" fill="#6b3d2a" stroke="#3a2117" stroke-width="8"/>
+    <path d="M20 78c88 48 248 48 340 0v44c-86 54-254 54-340 0z" fill="#8b573d"/>
+    <rect x="52" y="82" width="92" height="102" rx="18" fill="#d9a24a"/>
+    <rect x="178" y="82" width="92" height="102" rx="18" fill="#d9a24a"/>
+    <circle cx="310" cy="132" r="36" fill="#f7b32b"/>
+  </g>
+  <g font-family="Arial, sans-serif" font-size="24" fill="#4a3326">
+    <text x="112" y="620">✓ menos açúcar e mais apresentação</text>
+    <text x="112" y="668">✓ finalização bonita para vender</text>
+    <text x="112" y="716">✓ ideia de venda: caixinhas com 4 unidades</text>
+  </g>
+</svg>

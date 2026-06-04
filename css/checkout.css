@@ -25,7 +25,7 @@
 @keyframes ckt-pop { from { transform: translateY(16px) scale(.98); opacity: 0 } to { transform: none; opacity: 1 } }
 
 .ckt-head {
-  background: linear-gradient(135deg, #22b5e0, #1378a8);
+  background: linear-gradient(135deg, #e43d30, #b92d23 58%, #168a4a);
   color: #fff; padding: 18px 22px; border-radius: 22px 22px 0 0;
   position: relative;
 }
@@ -80,7 +80,7 @@
   color: #46555f; font-size: .78rem; font-weight: 800;
 }
 .ckt-price-tag {
-  flex: none; border-radius: 999px; padding: 6px 10px;
+  flex: none; align-self: flex-end; border-radius: 999px; padding: 6px 10px;
   background: #e9fbf0; color: #138a47;
   border: 1px solid #b9ebcf;
   font-size: .72rem; font-weight: 900; line-height: 1; white-space: nowrap;
@@ -155,8 +155,38 @@
   outline: none; transition: border-color .15s, box-shadow .15s;
   font-family: inherit;
 }
-.ckt-field input:focus { border-color: #22b5e0; box-shadow: 0 0 0 3px rgba(34,181,224,.18); }
+.ckt-field input:focus { border-color: #e43d30; box-shadow: 0 0 0 3px rgba(228,61,48,.16); }
 .ckt-field input.err { border-color: #e0524f; }
+
+.ckt-bump {
+  display: grid; grid-template-columns: auto 1fr auto; gap: 10px;
+  align-items: center; margin: 14px 0 12px; padding: 12px;
+  border: 2px dashed #f59e0b; border-radius: 16px;
+  background: linear-gradient(135deg, #fff7df, #fff);
+  cursor: pointer; box-shadow: 0 8px 18px rgba(245,158,11,.12);
+}
+.ckt-bump input {
+  width: 20px; height: 20px; accent-color: #16a34a;
+}
+.ckt-bump-box { display: grid; gap: 2px; min-width: 0; }
+.ckt-bump-kicker {
+  width: fit-content; padding: 3px 8px; border-radius: 999px;
+  background: #ef4444; color: #fff; font-size: .66rem; font-weight: 900;
+  letter-spacing: .04em; text-transform: uppercase;
+}
+.ckt-bump strong {
+  color: #4a3326; font-size: .9rem; line-height: 1.15;
+}
+.ckt-bump small {
+  color: #6b7780; font-size: .76rem; line-height: 1.25;
+}
+.ckt-bump b {
+  color: #16a34a; font-size: .88rem; white-space: nowrap;
+}
+.ckt-bump:has(input:checked) {
+  border-color: #16a34a;
+  background: linear-gradient(135deg, #ecfdf3, #fffaf0);
+}
 
 .ckt-btn {
   width: 100%; margin-top: 6px;
@@ -176,7 +206,7 @@
 
 /* ---- tela PIX ---- */
 .ckt-pix { text-align: center; }
-.ckt-pix h4 { margin: 0 0 4px; color: #1378a8; font-size: 1.1rem; }
+.ckt-pix h4 { margin: 0 0 4px; color: #168a4a; font-size: 1.1rem; }
 .ckt-pix .sub { font-size: .82rem; color: #6b7780; margin: 0 0 14px; }
 .ckt-qr {
   width: 220px; height: 220px; margin: 0 auto 14px;
@@ -192,10 +222,10 @@
 }
 .ckt-copy-btn {
   border: 0; border-radius: 10px; padding: 0 16px;
-  background: #1378a8; color: #fff; font-weight: 700; cursor: pointer; font-family: inherit;
+  background: #168a4a; color: #fff; font-weight: 700; cursor: pointer; font-family: inherit;
   white-space: nowrap;
 }
-.ckt-copy-btn:hover { background: #0f6a96; }
+.ckt-copy-btn:hover { background: #0f6d39; }
 
 .ckt-status {
   margin-top: 14px; padding: 12px; border-radius: 12px;

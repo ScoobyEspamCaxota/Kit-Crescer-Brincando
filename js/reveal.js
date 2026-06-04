@@ -1,5 +1,5 @@
 /* =========================================================
-   Crescer Brincando — animações leves (vanilla)
+   Arraiá Lucrativo — animações leves (vanilla)
    reveal no scroll + header sticky + barra CTA mobile.
    Tudo progressivo: sem JS, conteúdo visível (CSS gated em .js).
    ========================================================= */

@@ -441,20 +441,34 @@ h2.center + *, .eyebrow.center { }
   margin-inline: auto;
   isolation: isolate;
 }
-/* Moldura interna dourada tracejada */
+/* Faixa de cores Festa Junina no topo (clipada pelo overflow:hidden do box) */
 .offer-box::before {
   content: "";
   position: absolute;
-  inset: 46px 12px 12px;
+  inset: 0 0 auto;
+  height: 14px;
+  background: repeating-linear-gradient(
+    90deg,
+    #e43d30 0px 44px,
+    #f7c948 44px 88px,
+    #168a4a 88px 132px,
+    #4da6d6 132px 176px
+  );
+}
+/* Moldura interna dourada tracejada */
+.offer-box::after {
+  content: "";
+  position: absolute;
+  inset: 54px 12px 12px;
   border: 1.5px dashed rgba(201,126,10,.25);
   border-radius: 15px;
   pointer-events: none;
 }
 
-/* ---- BANDEIRINHAS ---- */
+/* ---- BANDEIRINHAS (penduradas logo abaixo da faixa) ---- */
 .offer-flagline {
   position: absolute;
-  top: 4px;
+  top: 14px;
   left: 50%;
   z-index: 3;
   width: min(520px, calc(100% - 24px));

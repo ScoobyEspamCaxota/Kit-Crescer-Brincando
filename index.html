@@ -21,40 +21,57 @@
   <link rel="preload" href="css/checkout.css?v=20260604-junina8" as="style" onload="this.onload=null;this.rel='stylesheet'" />
   <noscript><link rel="stylesheet" href="css/checkout.css?v=20260604-junina8" /></noscript>
 
+  <!-- Rastreadores (Utmify + Meta Pixel) carregados só após interacao ou load+idle:
+       libera banda para o LCP no 4G sem perder o PageView. -->
   <script>
-    window.pixelId = "6a1cd2ee8211a25759ab0c3c";
-    var a = document.createElement("script");
-    a.setAttribute("async", "");
-    a.setAttribute("defer", "");
-    a.setAttribute("src", "https://cdn.utmify.com.br/scripts/pixel/pixel.js");
-    document.head.appendChild(a);
+  (function () {
+    var loaded = false;
+    function loadTrackers() {
+      if (loaded) return; loaded = true;
+
+      // Utmify Pixel
+      window.pixelId = "6a1cd2ee8211a25759ab0c3c";
+      var up = document.createElement("script");
+      up.async = true; up.defer = true;
+      up.src = "https://cdn.utmify.com.br/scripts/pixel/pixel.js";
+      document.head.appendChild(up);
+
+      // Utmify UTMs
+      var uu = document.createElement("script");
+      uu.async = true; uu.defer = true;
+      uu.setAttribute("data-utmify-prevent-xcod-sck", "");
+      uu.setAttribute("data-utmify-prevent-subids", "");
+      uu.src = "https://cdn.utmify.com.br/scripts/utms/latest.js";
+      document.head.appendChild(uu);
+
+      // Meta Pixel
+      !function(f,b,e,v,n,t,s)
+      {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+      n.queue=[];t=b.createElement(e);t.async=!0;
+      t.src=v;s=b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t,s)}(window, document,'script',
+      'https://connect.facebook.net/en_US/fbevents.js');
+      fbq('init', '1534076865093364');
+      fbq('track', 'PageView');
+    }
+
+    var evts = ["pointerdown", "touchstart", "keydown", "scroll"];
+    function once() {
+      evts.forEach(function (ev) { window.removeEventListener(ev, once); });
+      loadTrackers();
+    }
+    evts.forEach(function (ev) { window.addEventListener(ev, once, { passive: true }); });
+    // fallback: carrega mesmo sem interacao, logo apos o load
+    window.addEventListener("load", function () { setTimeout(loadTrackers, 3500); });
+  })();
   </script>
-  <script
-    src="https://cdn.utmify.com.br/scripts/utms/latest.js"
-    data-utmify-prevent-xcod-sck
-    data-utmify-prevent-subids
-    async
-    defer
-  ></script>
-  <!-- Meta Pixel Code -->
-  <script>
-  !function(f,b,e,v,n,t,s)
-  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-  n.queue=[];t=b.createElement(e);t.async=!0;
-  t.src=v;s=b.getElementsByTagName(e)[0];
-  s.parentNode.insertBefore(t,s)}(window, document,'script',
-  'https://connect.facebook.net/en_US/fbevents.js');
-  fbq('init', '1522067889588755');
-  fbq('track', 'PageView');
-  </script>
-  <!-- End Meta Pixel Code -->
 
 </head>
 <body class="no-js">
   <noscript><img height="1" width="1" style="display:none"
-  src="https://www.facebook.com/tr?id=1522067889588755&ev=PageView&noscript=1"
+  src="https://www.facebook.com/tr?id=1534076865093364&ev=PageView&noscript=1"
   /></noscript>
 
   <main id="topo">
@@ -115,8 +132,8 @@
           <h2 id="vsl-title" class="center">Veja como essas receitas podem virar renda extra no arraiá</h2>
         </div>
         <div class="vsl-wrap vsl-wrap--section" data-reveal>
-          <video class="vsl-video" autoplay muted loop playsinline preload="metadata" poster="assets/festa-junina/vsl-poster.webp" aria-label="VSL do Kit Receitas Juninas Lucrativas">
-            <source src="assets/festa-junina/vsl-receitas-juninas.mp4" type="video/mp4" />
+          <video class="vsl-video" data-vsl muted loop playsinline preload="none" poster="assets/festa-junina/vsl-poster.webp" aria-label="VSL do Kit Receitas Juninas Lucrativas">
+            <source data-src="assets/festa-junina/vsl-receitas-juninas.mp4" type="video/mp4" />
             Seu navegador não suporta vídeo HTML5.
           </video>
         </div>
@@ -323,7 +340,7 @@
   </footer>
 
   <script>document.body.classList.remove('no-js');document.body.classList.add('js');</script>
-  <script src="js/reveal.js?v=20260604-junina7" defer></script>
+  <script src="js/reveal.js?v=20260604-junina9" defer></script>
   <script src="js/checkout.js?v=20260604-junina7" defer></script>
 </body>
 </html>

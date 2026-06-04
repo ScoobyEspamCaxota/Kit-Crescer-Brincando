@@ -42,6 +42,29 @@
     d.querySelectorAll("[data-reveal]").forEach(function (el) { el.classList.add("in"); });
   }
 
+  /* ---- VSL: carrega e inicia só ao aproximar (economiza ~6.6MB no load) ---- */
+  var vsl = d.querySelector("[data-vsl]");
+  if (vsl) {
+    var vslLoaded = false;
+    var loadVsl = function () {
+      if (vslLoaded) return;
+      vslLoaded = true;
+      var src = vsl.querySelector("source[data-src]");
+      if (src && !src.src) src.src = src.getAttribute("data-src");
+      vsl.load();
+      var p = vsl.play();
+      if (p && p.catch) p.catch(function () {});
+    };
+    if ("IntersectionObserver" in window) {
+      var vio = new IntersectionObserver(function (entries) {
+        if (entries[0].isIntersecting) { loadVsl(); vio.disconnect(); }
+      }, { rootMargin: "500px 0px" });
+      vio.observe(vsl);
+    } else {
+      loadVsl();
+    }
+  }
+
   /* ---- contador de pessoas online por sessão ---- */
   d.querySelectorAll("[data-live-counter]").forEach(function (counter) {
     var min = Number(counter.getAttribute("data-min") || 112);

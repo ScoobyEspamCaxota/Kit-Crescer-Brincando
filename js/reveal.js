@@ -81,6 +81,34 @@
     if (countEl) countEl.textContent = String(value);
   });
 
+  /* ---- timer promocional da hero por sessão ---- */
+  var heroCountdown = d.querySelector("[data-hero-countdown]");
+  if (heroCountdown) {
+    var countdownMinutes = Number(heroCountdown.getAttribute("data-countdown-minutes") || 12);
+    var countdownSeconds = Number(heroCountdown.getAttribute("data-countdown-seconds") || 0);
+    var countdownMs = Math.max(1, countdownSeconds || (countdownMinutes * 60)) * 1000;
+    var countdownKey = "arraia_hero_countdown_deadline";
+    var deadline = null;
+
+    try { deadline = Number(sessionStorage.getItem(countdownKey)); } catch (_) {}
+    if (!deadline || deadline <= Date.now()) {
+      deadline = Date.now() + countdownMs;
+      try { sessionStorage.setItem(countdownKey, String(deadline)); } catch (_) {}
+    }
+
+    function renderCountdown() {
+      var remaining = Math.max(0, deadline - Date.now());
+      var totalSeconds = Math.ceil(remaining / 1000);
+      var minutes = Math.floor(totalSeconds / 60);
+      var seconds = totalSeconds % 60;
+      heroCountdown.textContent = String(minutes).padStart(2, "0") + ":" + String(seconds).padStart(2, "0");
+      if (remaining <= 0) window.clearInterval(countdownTimer);
+    }
+
+    var countdownTimer = window.setInterval(renderCountdown, 1000);
+    renderCountdown();
+  }
+
   /* ---- chance de oferta no check-in por sessão ---- */
   d.querySelectorAll("[data-offer-chance]").forEach(function (chanceEl) {
     var min = 47;

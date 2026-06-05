@@ -18,7 +18,7 @@
   <noscript><link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" /></noscript>
   <link rel="preload" as="image" href="assets/festa-junina/hero-sao-joao-mockup-transparent.png?v=20260605-png1" type="image/png" fetchpriority="high" />
   <link rel="preload" as="image" href="assets/festa-junina/bandeirinhas-frame-transparent.png?v=20260605-png1" type="image/png" />
-  <link rel="stylesheet" href="css/style.css?v=20260605-junina30" />
+  <link rel="stylesheet" href="css/style.css?v=20260605-junina31" />
   <link rel="preload" href="css/checkout.css?v=20260605-links1" as="style" onload="this.onload=null;this.rel='stylesheet'" />
   <noscript><link rel="stylesheet" href="css/checkout.css?v=20260605-links1" /></noscript>
 
@@ -64,8 +64,11 @@
       loadTrackers();
     }
     evts.forEach(function (ev) { window.addEventListener(ev, once, { passive: true }); });
-    // fallback: carrega mesmo sem interacao, logo apos o load
-    window.addEventListener("load", function () { setTimeout(loadTrackers, 3500); });
+    // fallback: no celular, deixa o LCP respirar antes dos pixels de terceiros.
+    window.addEventListener("load", function () {
+      var isMobile = window.matchMedia && window.matchMedia("(max-width: 700px)").matches;
+      setTimeout(loadTrackers, isMobile ? 9000 : 3500);
+    });
   })();
   </script>
 
@@ -143,13 +146,13 @@
         <div class="depo-carousel wa-carousel" data-depo-carousel aria-label="Carrossel automático com prints de WhatsApp de clientes">
           <div class="depo-track wa-track" data-depo-track>
             <figure class="depo-card wa-card">
-              <img src="assets/festa-junina/whatsapp-juliana-canjica.jpg?v=20260605-proof" alt="Print de WhatsApp mostrando cliente que fez canjica, postou no status e vendeu tudo no mesmo dia" loading="lazy" decoding="async" width="945" height="1680" />
+              <img src="assets/festa-junina/whatsapp-juliana-canjica-440.jpg?v=20260605-waopt1" srcset="assets/festa-junina/whatsapp-juliana-canjica-440.jpg?v=20260605-waopt1 440w, assets/festa-junina/whatsapp-juliana-canjica-660.jpg?v=20260605-waopt1 660w, assets/festa-junina/whatsapp-juliana-canjica.jpg?v=20260605-proof 941w" sizes="220px" alt="Print de WhatsApp mostrando cliente que fez canjica, postou no status e vendeu tudo no mesmo dia" loading="lazy" fetchpriority="low" decoding="async" width="440" height="782" />
             </figure>
             <figure class="depo-card wa-card">
-              <img src="assets/festa-junina/whatsapp-patricia-canjica.jpg?v=20260605-proof" alt="Print de WhatsApp mostrando cliente que comprou a receita, preparou canjica e vendeu tudo no primeiro dia" loading="lazy" decoding="async" width="943" height="1677" />
+              <img src="assets/festa-junina/whatsapp-patricia-canjica-440.jpg?v=20260605-waopt1" srcset="assets/festa-junina/whatsapp-patricia-canjica-440.jpg?v=20260605-waopt1 440w, assets/festa-junina/whatsapp-patricia-canjica-660.jpg?v=20260605-waopt1 660w, assets/festa-junina/whatsapp-patricia-canjica.jpg?v=20260605-proof 941w" sizes="220px" alt="Print de WhatsApp mostrando cliente que comprou a receita, preparou canjica e vendeu tudo no primeiro dia" loading="lazy" fetchpriority="low" decoding="async" width="440" height="782" />
             </figure>
             <figure class="depo-card wa-card">
-              <img src="assets/festa-junina/whatsapp-fernanda-canjica.jpg?v=20260605-proof" alt="Print de WhatsApp mostrando cliente que testou a canjica, vendeu tudo e recebeu pedido para fazer de novo" loading="lazy" decoding="async" width="941" height="1672" />
+              <img src="assets/festa-junina/whatsapp-fernanda-canjica-440.jpg?v=20260605-waopt1" srcset="assets/festa-junina/whatsapp-fernanda-canjica-440.jpg?v=20260605-waopt1 440w, assets/festa-junina/whatsapp-fernanda-canjica-660.jpg?v=20260605-waopt1 660w, assets/festa-junina/whatsapp-fernanda-canjica.jpg?v=20260605-proof 941w" sizes="220px" alt="Print de WhatsApp mostrando cliente que testou a canjica, vendeu tudo e recebeu pedido para fazer de novo" loading="lazy" fetchpriority="low" decoding="async" width="440" height="782" />
             </figure>
           </div>
         </div>

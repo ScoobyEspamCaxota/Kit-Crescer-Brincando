@@ -170,9 +170,10 @@ h2.center + *, .eyebrow.center { }
   position: absolute;
   top: 0;
   left: 50%;
-  width: min(100%, 428px);
+  width: min(100vw, 428px);
   max-width: none;
-  height: auto;
+  height: min(23.37vw, 100px);
+  aspect-ratio: 428 / 100;
   object-fit: contain;
   object-position: center top;
   transform: translateX(-50%);

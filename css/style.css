@@ -313,6 +313,10 @@ h2.center + *, .eyebrow.center { }
 .hero-copy .reassure { justify-content: center; }
 .hero-art { display: flex; justify-content: center; position: relative; margin: 0 auto 25px; }
 .js .hero-art[data-float] { animation: none; }
+.js .hero-art[data-float] .recipe-cover {
+  animation: hero-mockup-drift 5.4s ease-in-out infinite;
+  will-change: transform;
+}
 .recipe-cover { width: min(303px, 82vw); border-radius: 0; padding: 0; background: transparent; box-shadow: none; border: 0; overflow: visible; rotate: 0deg; }
 .recipe-cover img { display: block; width: 100%; height: auto; object-fit: contain; object-position: center; border-radius: inherit; }
 .vsl-wrap {
@@ -368,6 +372,13 @@ h2.center + *, .eyebrow.center { }
 .sticker--star { top: -14px; left: -6px; animation: float 5s ease-in-out infinite; }
 .sticker--pencil { bottom: 10px; right: -10px; animation: float 6.5s ease-in-out infinite reverse; }
 @media (prefers-reduced-motion: reduce) { .sticker { animation: none !important; } }
+@keyframes hero-mockup-drift {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(0, -5px, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .js .hero-art[data-float] .recipe-cover { animation: none; }
+}
 
 /* =========================================================
    DOR
@@ -422,17 +433,71 @@ h2.center + *, .eyebrow.center { }
 .balance-grid { display: grid; gap: clamp(22px, 6vw, 48px); align-items: center; max-width: 760px; margin-inline: auto; }
 .balance-copy { text-align: center; }
 .balance-copy h2 { margin: 10px auto 0; max-width: 18ch; }
+.balance-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: center;
+  gap: .16em .28em;
+  max-width: min(430px, 100%);
+  font-family: var(--font-body);
+  font-size: clamp(1.85rem, 7.4vw, 2.7rem);
+  font-weight: 900;
+  line-height: 1.08;
+}
+.balance-title-money {
+  position: relative;
+  z-index: 0;
+  display: inline-flex;
+  align-items: baseline;
+  padding: .03em .2em .1em;
+  border-radius: 10px;
+  color: #fffdf6;
+  background: linear-gradient(180deg, #e43d30, #b71117);
+  box-shadow:
+    0 12px 24px rgba(183, 17, 23, .2),
+    inset 0 2px 0 rgba(255,255,255,.24);
+  transform: rotate(-1.2deg);
+}
+.balance-title-money::after {
+  content: "";
+  position: absolute;
+  left: .18em;
+  right: .18em;
+  bottom: -.1em;
+  z-index: -1;
+  height: .26em;
+  border-radius: var(--pill);
+  background: rgba(247, 179, 43, .72);
+  transform: rotate(1.2deg);
+}
 .balance-copy .lead { margin: 14px auto 0; max-width: 48ch; }
-.balance-points { list-style: none; display: grid; gap: 10px; padding: 0; margin-top: 20px; }
-.balance-points li { position: relative; padding: 12px 14px 12px 42px; border: 1.5px solid var(--border); border-radius: 14px; background: rgba(255,255,255,.78); box-shadow: var(--shadow-sm); font-weight: 800; }
-.balance-points li::before { content: ""; position: absolute; left: 16px; top: 50%; width: 12px; height: 12px; border-radius: 50%; background: var(--green); transform: translateY(-50%); box-shadow: 0 0 0 5px rgba(22,138,74,.13); }
 /* =========================================================
    PRA QUEM É
    ========================================================= */
-.forwho h2 { margin-bottom: 28px; }
+.forwho h2 {
+  margin-bottom: 28px;
+  font-family: var(--font-body);
+  font-weight: 900;
+  letter-spacing: 0;
+  color: #2a211d;
+}
 .who-grid { display: grid; gap: 16px; }
 .who { border: 1.5px solid var(--border); border-radius: var(--radius-lg); padding: 26px; box-shadow: var(--shadow-sm); }
-.who h3 { font-size: 1.3rem; margin-bottom: 8px; }
+.who h3 {
+  margin-bottom: 8px;
+  font-family: var(--font-body);
+  font-size: 1.22rem;
+  font-weight: 900;
+  line-height: 1.18;
+  letter-spacing: 0;
+  color: #342821;
+}
+.who .checklist li {
+  font-family: var(--font-body);
+  font-weight: 700;
+  color: #5a463b;
+}
 .who--prof { background: linear-gradient(165deg, #fff, #EAF8EF); }
 .who--pais { background: linear-gradient(165deg, #fff, #FFF1D3); }
 
@@ -746,9 +811,12 @@ h2.center + *, .eyebrow.center { }
    GARANTIA
    ========================================================= */
 .guarantee-inner { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 18px; background: linear-gradient(165deg, #EAF8EF, #fff); border: 1.5px solid #B9DDBB; border-radius: var(--radius-lg); padding: clamp(26px, 6vw, 44px); box-shadow: var(--shadow-sm); }
-.seal { flex: none; width: 92px; height: 92px; border-radius: 50%; background: var(--green); color: #fff; display: grid; place-items: center; align-content: center; box-shadow: 0 0 0 8px rgba(22,138,74,.16); font-family: var(--font-head); }
-.seal span { font-size: 2.4rem; font-weight: 700; line-height: 1; }
-.seal small { font-size: .78rem; text-transform: uppercase; letter-spacing: .1em; }
+.guarantee-seal-img {
+  flex: none;
+  width: min(154px, 42vw);
+  height: auto;
+  filter: drop-shadow(0 14px 20px rgba(66, 42, 20, .18));
+}
 .guarantee-inner p { color: var(--muted); max-width: 48ch; }
 
 /* =========================================================

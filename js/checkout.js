@@ -6,39 +6,54 @@
 (function () {
   "use strict";
 
-  var PRICE_OLD = "R$ 47,90";
-  var PRODUCT_NAME = "Kit Receitas Juninas Lucrativas";
-  var PRODUCT_ID = "kit-receitas-juninas-lucrativas";
-  var BUMP = {
-    id: "kit-divulgacao-precificacao",
-    name: "Kit de Divulgação e Precificação",
-    value: 9.9,
-    price: "R$ 9,90",
-  };
+  var PRICE_OLD = "R$ 49,90";
+  var PRODUCT_NAME = "Método Arraiá Lucrativo";
+  var PRODUCT_ID = "metodo-arraia-lucrativo";
+  // Order bumps empilhados (mesmo PIX, sem friccao extra). Preco validado no servidor.
+  var BUMPS = [
+    {
+      id: "kit-divulgacao-precificacao",
+      name: "Saiba o preço certo e feche mais no WhatsApp",
+      value: 9.9,
+      price: "R$ 9,90",
+      kicker: "Adicione ao pedido",
+      title: "Saiba o preço certo e feche mais no WhatsApp",
+      desc: "Tabela de precificação, cardápio editável e mensagens prontas de venda.",
+    },
+    {
+      id: "pacote-artes-etiquetas",
+      name: "Artes prontas para etiquetas e divulgação",
+      value: 12.9,
+      price: "R$ 12,90",
+      kicker: "Cara de loja, vende mais caro",
+      title: "Artes prontas para etiquetas e divulgação",
+      desc: "Etiquetas, encartes e posts editáveis no Canva — seu doce parece profissional.",
+    },
+  ];
   var OFFERS = {
     main: {
       id: "main",
-      value: 17.9,
-      price: "R$ 17,90",
+      value: 14.9,
+      price: "R$ 14,90",
       tag: "Oferta ativa",
-      cta: "Gerar PIX de R$ 17,90",
+      cta: "Gerar PIX de R$ 14,90",
       promoBadge: "PROMOÇÃO",
       promoText: "Oferta reservada por",
       priceTone: "",
     },
     rescue: {
       id: "rescue",
-      value: 14.99,
-      price: "R$ 14,99",
+      value: 11.9,
+      price: "R$ 11,90",
       tag: "Condição especial",
-      cta: "Garantir por R$ 14,99",
+      cta: "Garantir por R$ 11,90",
       promoBadge: "OFERTA ESPECIAL",
       promoText: "Condição liberada por",
       priceTone: " ckt-price--rescue",
     },
   };
   var currentOffer = OFFERS.main;
-  var currentBump = false;
+  var bumpState = {}; // id do bump -> selecionado (bool)
   var rescueShown = false;
   var pollTimer = null;
   var promoTimer = null;
@@ -51,15 +66,29 @@
     return currentOffer || OFFERS.main;
   }
 
+  function selectedBumps() {
+    return BUMPS.filter(function (b) { return bumpState[b.id]; });
+  }
+
+  function selectedBumpIds() {
+    return selectedBumps().map(function (b) { return b.id; });
+  }
+
+  function bumpTotal() {
+    return selectedBumps().reduce(function (sum, b) { return sum + b.value; }, 0);
+  }
+
   function activeValue() {
     var offer = activeOffer();
-    return Number((offer.value + (currentBump ? BUMP.value : 0)).toFixed(2));
+    return Number((offer.value + bumpTotal()).toFixed(2));
   }
 
   function metaPayload(extra) {
     var offer = activeOffer();
     var contents = [{ id: PRODUCT_ID, quantity: 1, item_price: offer.value }];
-    if (currentBump) contents.push({ id: BUMP.id, quantity: 1, item_price: BUMP.value });
+    selectedBumps().forEach(function (b) {
+      contents.push({ id: b.id, quantity: 1, item_price: b.value });
+    });
     return Object.assign({
       content_ids: contents.map(function (item) { return item.id; }),
       content_name: PRODUCT_NAME,
@@ -115,7 +144,7 @@
 
   function open() {
     currentOffer = OFFERS.main;
-    currentBump = false;
+    bumpState = {};
     rescueShown = false;
     metaTrack("InitiateCheckout", {}, "open");
     backdrop.classList.add("open");
@@ -255,11 +284,15 @@
 
   function readFormPrefill() {
     var form = body.querySelector("#ckt-form");
-    if (!form) return {};
+    if (!form) return { bumps: selectedBumpIds() };
+    var bumps = [];
+    form.querySelectorAll("input[data-bump-id]").forEach(function (cb) {
+      if (cb.checked) bumps.push(cb.getAttribute("data-bump-id"));
+    });
     return {
       name: form.name ? form.name.value.trim() : "",
       email: form.email ? form.email.value.trim() : "",
-      bump: form.bump ? form.bump.checked : currentBump,
+      bumps: bumps,
     };
   }
 
@@ -283,17 +316,18 @@
 
     body.innerHTML = [
       '<div class="ckt-rescue">',
-      '  <span class="ckt-rescue-badge">Oferta especial liberada</span>',
-      "  <h4>Antes de sair, fique com o pack completo por R$ 14,99</h4>",
-      "  <p>É o mesmo acesso digital: receitas juninas saudáveis, acesso imediato e o mesmo link de download. A diferença é só a condição especial para você decidir agora.</p>",
-      '  <div class="ckt-rescue-price"><span>De ' + PRICE_OLD + '</span><strong>R$ 14,99</strong></div>',
+      '  <span class="ckt-rescue-badge">Espera! Última condição</span>',
+      "  <h4>Leva o plano por R$ 11,90 — só agora, nesta tela</h4>",
+      "  <p>Mesmo método, mesmo acesso imediato. Como você chegou até aqui, liberei o menor preço. Se fechar, volta para R$ 14,90.</p>",
+      '  <div class="ckt-rescue-price"><span>De ' + PRICE_OLD + '</span><strong>R$ 11,90</strong></div>',
       '  <ul class="ckt-rescue-list">',
-      "    <li>Mesmas receitas entregues após o pagamento</li>",
-      "    <li>Mesmo acesso imediato pelo download</li>",
-      "    <li>Mesma garantia de 7 dias</li>",
+      "    <li>Receitas juninas de giro rápido</li>",
+      "    <li>Precificação e roteiro de WhatsApp</li>",
+      "    <li>Acesso imediato pelo link de download</li>",
+      "    <li>7 dias de garantia — risco zero</li>",
       "  </ul>",
-      '  <button class="ckt-btn ckt-rescue-accept" type="button" id="ckt-rescue-accept">Quero garantir por R$ 14,99</button>',
-      '  <button class="ckt-link-btn" type="button" id="ckt-rescue-decline">Não, obrigado</button>',
+      '  <button class="ckt-btn ckt-rescue-accept" type="button" id="ckt-rescue-accept">Quero garantir por R$ 11,90</button>',
+      '  <button class="ckt-link-btn" type="button" id="ckt-rescue-decline">Não, prefiro perder essa condição</button>',
       "</div>",
     ].join("");
 
@@ -301,7 +335,6 @@
     var decline = body.querySelector("#ckt-rescue-decline");
     if (accept) accept.addEventListener("click", function () {
       currentOffer = OFFERS.rescue;
-      currentBump = Boolean(prefill.bump);
       resetPromoDeadline();
       metaTrack("InitiateCheckout", {
         event_source: "rescue_accept",
@@ -360,10 +393,30 @@
   }
 
   /* ---------- 1) formulário ---------- */
+  function bumpHtml() {
+    return BUMPS.map(function (b) {
+      var checked = bumpState[b.id] ? " checked" : "";
+      return [
+        '  <label class="ckt-bump" for="ckt-bump-' + b.id + '">',
+        '    <input id="ckt-bump-' + b.id + '" data-bump-id="' + b.id + '" type="checkbox"' + checked + '>',
+        '    <span class="ckt-bump-box">',
+        '      <span class="ckt-bump-kicker">' + b.kicker + '</span>',
+        '      <strong>' + b.title + '</strong>',
+        '      <small>' + b.desc + '</small>',
+        '    </span>',
+        '    <b>+ ' + b.price + '</b>',
+        '  </label>',
+      ].join("");
+    }).join("");
+  }
+
   function showForm(prefill) {
     var offer = activeOffer();
     prefill = prefill || {};
-    currentBump = Boolean(prefill.bump);
+    if (prefill.bumps) {
+      bumpState = {};
+      prefill.bumps.forEach(function (id) { bumpState[id] = true; });
+    }
     body.innerHTML = [
       promoBlock(),
       '<div class="ckt-price' + offer.priceTone + '" aria-label="Preco promocional">',
@@ -376,15 +429,7 @@
       '<form id="ckt-form" novalidate>',
       '  <div class="ckt-field"><label>Nome completo</label><input name="name" autocomplete="name" placeholder="Seu nome" value="' + esc(prefill.name) + '"></div>',
       '  <div class="ckt-field"><label>E-mail</label><input name="email" type="email" autocomplete="email" placeholder="voce@email.com" value="' + esc(prefill.email) + '"></div>',
-      '  <label class="ckt-bump" for="ckt-bump">',
-      '    <input id="ckt-bump" name="bump" type="checkbox"' + (currentBump ? " checked" : "") + '>',
-      '    <span class="ckt-bump-box">',
-      '      <span class="ckt-bump-kicker">Oferta complementar</span>',
-      '      <strong>Adicionar Kit de Divulgação e Precificação</strong>',
-      '      <small>Cardápio editável, mensagens prontas para WhatsApp e tabela de precificação.</small>',
-      '    </span>',
-      '    <b>+ ' + BUMP.price + '</b>',
-      '  </label>',
+      bumpHtml(),
       '  <button class="ckt-btn" type="submit" data-ckt-submit>' + esc(submitLabel()) + '</button>',
       '  <div class="ckt-msg" id="ckt-msg"></div>',
       '  <div class="ckt-secure"><img src="assets/offer-badges.svg" alt="Compra segura, acesso imediato e 7 dias de garantia" width="270" height="28" loading="lazy" decoding="async"></div>',
@@ -393,10 +438,11 @@
 
     var form = body.querySelector("#ckt-form");
     form.addEventListener("submit", submitForm);
-    var bump = form.querySelector("input[name='bump']");
-    if (bump) bump.addEventListener("change", function () {
-      currentBump = bump.checked;
-      updateSubmitLabel(form);
+    form.querySelectorAll("input[data-bump-id]").forEach(function (cb) {
+      cb.addEventListener("change", function () {
+        bumpState[cb.getAttribute("data-bump-id")] = cb.checked;
+        updateSubmitLabel(form);
+      });
     });
     updateSubmitLabel(form);
     startPromoCountdown();
@@ -419,18 +465,23 @@
     var form = e.target;
     var msg = body.querySelector("#ckt-msg");
     var btn = form.querySelector(".ckt-btn");
+    // sincroniza estado dos bumps a partir do form
+    bumpState = {};
+    form.querySelectorAll("input[data-bump-id]").forEach(function (cb) {
+      if (cb.checked) bumpState[cb.getAttribute("data-bump-id")] = true;
+    });
+    var bumps = selectedBumpIds();
     var data = {
       name: form.name.value.trim(),
       email: form.email.value.trim(),
       offer: activeOffer().id,
-      bump: form.bump ? form.bump.checked : false,
+      bumps: bumps,
       tracking: getTrackingParameters(),
     };
-    currentBump = Boolean(data.bump);
     metaTrack("Lead", {
       event_source: "checkout_form",
       offer: activeOffer().id,
-      has_bump: currentBump,
+      has_bump: bumps.length > 0,
       value: activeValue(),
     }, activeOffer().id + "-form");
     msg.textContent = ""; msg.className = "ckt-msg";
@@ -440,7 +491,7 @@
       .then(function (res) {
         metaTrack("AddPaymentInfo", {
           payment_method: "pix",
-          has_bump: currentBump,
+          has_bump: bumps.length > 0,
           value: Number(res.value || activeValue()),
         }, res.chargeId || "pix");
         showPix(res, data);
@@ -503,7 +554,7 @@
                 has_bump: Boolean(payment.addons && payment.addons.length),
               }, chargeId);
             }
-            showSuccess(s.downloadUrl);
+            showSuccess(s.downloadLinks || s.downloadUrl);
           }
         })
         .catch(function () {});
@@ -511,14 +562,34 @@
   }
 
   /* ---------- 4) sucesso ---------- */
-  function showSuccess(downloadUrl) {
+  function normalizeDownloadLinks(downloadPayload) {
+    if (Array.isArray(downloadPayload)) {
+      return downloadPayload.filter(function (item) { return item && item.url; });
+    }
+    if (downloadPayload) {
+      return [{ id: "main", name: "Método Arraiá Lucrativo", url: downloadPayload }];
+    }
+    return [];
+  }
+
+  function showSuccess(downloadPayload) {
     stopPromoCountdown();
+    var downloadLinks = normalizeDownloadLinks(downloadPayload);
+    var downloadHtml = downloadLinks.length ? [
+      '  <div class="ckt-download-list">',
+      downloadLinks.map(function (item, index) {
+        var label = item.name || (index ? "Baixar complemento" : "Baixar produto principal");
+        return '    <a class="ckt-download" href="' + esc(item.url) + '" target="_blank" rel="noopener">' + esc(label) + '</a>';
+      }).join(""),
+      "  </div>",
+    ].join("") : "";
+
     body.innerHTML = [
       '<div class="ckt-success">',
       '  <div class="check"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l4 4 10-11" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>',
       "  <h4>Pagamento confirmado!</h4>",
-      "  <p>Seu acesso ao Kit Receitas Juninas Lucrativas foi liberado. Clique abaixo para baixar os arquivos.</p>",
-      downloadUrl ? '  <a class="ckt-download" href="' + esc(downloadUrl) + '" target="_blank" rel="noopener">Baixar meus arquivos</a>' : "",
+      "  <p>Seu acesso ao Método Arraiá Lucrativo foi liberado. Clique abaixo para baixar os arquivos.</p>",
+      downloadHtml,
       '  <button class="ckt-btn" type="button" id="ckt-done" style="margin-top:18px">Fechar</button>',
       "</div>",
     ].join("");

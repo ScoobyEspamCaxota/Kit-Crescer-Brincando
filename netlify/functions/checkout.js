@@ -26,7 +26,7 @@ exports.handler = async (event) => {
     const err = validBuyer(buyer);
     if (err) return json(400, { error: err });
 
-    const pricing = resolveCheckoutPricing(buyer.offer, { bump: buyer.bump });
+    const pricing = resolveCheckoutPricing(buyer.offer, { bump: buyer.bump, bumps: buyer.bumps });
     const { offer, addons, value } = pricing;
     const phone = onlyDigits(buyer.phone);
     const externalReference = (offer.id === "rescue" ? "RJR-" : "RJ-") + Date.now();

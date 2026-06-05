@@ -1,6 +1,6 @@
 "use strict";
 
-const { DOWNLOAD_URL, connectBlobs, findOrder, json } = require("./_shared");
+const { buildDownloadLinks, connectBlobs, findOrder, json } = require("./_shared");
 
 function chargeIdFromPath(event) {
   const path = event.path || "";
@@ -18,10 +18,13 @@ exports.handler = async (event) => {
     const order = await findOrder(chargeId);
     if (!order) return json(404, { status: "UNKNOWN" });
 
+    const downloadLinks = order.status === "PAID" ? buildDownloadLinks(order) : [];
+
     return json(200, {
       status: order.status,
       paidAt: order.paidAt || null,
-      downloadUrl: order.status === "PAID" ? DOWNLOAD_URL || null : null,
+      downloadUrl: downloadLinks[0]?.url || null,
+      downloadLinks,
     });
   } catch (e) {
     console.error("[status]", e);

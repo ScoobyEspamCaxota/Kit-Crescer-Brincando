@@ -8,16 +8,20 @@ const {
   QP_CLIENT_ID = "",
   QP_CLIENT_SECRET = "",
   QP_WEBHOOK_SECRET = "",
-  PRICE = "17.90",
-  PRODUCT = "Kit Receitas Juninas Lucrativas",
+  PRICE = "14.90",
+  PRODUCT = "Método Arraiá Lucrativo",
   BUMP_PRICE = "9.90",
-  BUMP_PRODUCT = "Kit de Divulgação e Precificação",
+  BUMP_PRODUCT = "Saiba o preço certo e feche mais no WhatsApp",
+  BUMP2_PRICE = "12.90",
+  BUMP2_PRODUCT = "Artes prontas para etiquetas e divulgação",
   UTMIFY_API_TOKEN = "",
   UTMIFY_ENDPOINT = "https://api.utmify.com.br/api-credentials/orders",
   UTMIFY_PLATFORM = "QuacPay",
   UTMIFY_IS_TEST = "false",
-  DOWNLOAD_URL = "",
-  DOWNSELL_PRICE = "14.99",
+  DOWNLOAD_URL = "https://drive.google.com/drive/folders/1KswTcAkTH30jCA5C7hPaqiMH6pGV1n8a?usp=drive_link",
+  BUMP_DOWNLOAD_URL = "https://drive.google.com/drive/folders/1mtZIZOccVIhbEhj0UEvua2sWfan3Y8Ev?usp=sharing",
+  BUMP2_DOWNLOAD_URL = "https://drive.google.com/drive/folders/1SozRku9jUNphHJxGTvSw00VM3meF3H_3?usp=sharing",
+  DOWNSELL_PRICE = "11.90",
 } = process.env;
 
 const TRACKING_KEYS = [
@@ -241,18 +245,54 @@ function moneyValue(value, fallback) {
 function resolveOffer(offerId) {
   const id = String(offerId || "main").toLowerCase();
   if (id === "rescue" || id === "downsell") {
-    return { id: "rescue", value: moneyValue(DOWNSELL_PRICE, 14.99) };
+    return { id: "rescue", value: moneyValue(DOWNSELL_PRICE, 11.9) };
   }
-  return { id: "main", value: moneyValue(PRICE, 17.9) };
+  return { id: "main", value: moneyValue(PRICE, 14.9) };
+}
+
+// Catalogo de order bumps. Preco SEMPRE definido aqui (servidor), nunca pelo cliente.
+function bumpCatalog() {
+  return {
+    "kit-divulgacao-precificacao": {
+      id: "kit-divulgacao-precificacao",
+      name: BUMP_PRODUCT,
+      value: moneyValue(BUMP_PRICE, 9.9),
+      downloadUrl: BUMP_DOWNLOAD_URL,
+    },
+    "pacote-artes-etiquetas": {
+      id: "pacote-artes-etiquetas",
+      name: BUMP2_PRODUCT,
+      value: moneyValue(BUMP2_PRICE, 12.9),
+      downloadUrl: BUMP2_DOWNLOAD_URL,
+    },
+  };
+}
+
+function buildDownloadLinks(order = {}) {
+  const links = [];
+  if (DOWNLOAD_URL) {
+    links.push({ id: "main", name: PRODUCT, url: DOWNLOAD_URL });
+  }
+
+  const catalog = bumpCatalog();
+  (order.addons || []).forEach((addon) => {
+    const item = catalog[addon.id] || addon;
+    const url = item.downloadUrl || addon.downloadUrl || "";
+    if (url) links.push({ id: item.id || addon.id, name: item.name || addon.name, url });
+  });
+
+  return links;
 }
 
 function resolveAddons(input = {}) {
-  if (!input.bump) return [];
-  return [{
-    id: "kit-divulgacao-precificacao",
-    name: BUMP_PRODUCT,
-    value: moneyValue(BUMP_PRICE, 9.9),
-  }];
+  const catalog = bumpCatalog();
+  let ids = [];
+  if (Array.isArray(input.bumps)) ids = input.bumps;
+  else if (input.bump) ids = ["kit-divulgacao-precificacao"]; // compat com versao antiga
+  const seen = {};
+  return ids
+    .map((id) => catalog[String(id)])
+    .filter((addon) => addon && !seen[addon.id] && (seen[addon.id] = true));
 }
 
 function resolveCheckoutPricing(offerId, input = {}) {
@@ -370,10 +410,12 @@ function envInfo() {
     hasCreds: Boolean(QP_CLIENT_ID && QP_CLIENT_SECRET),
     hasUtmify: Boolean(UTMIFY_API_TOKEN),
     hasDownload: Boolean(DOWNLOAD_URL),
+    hasBumpDownloads: Boolean(BUMP_DOWNLOAD_URL && BUMP2_DOWNLOAD_URL),
   };
 }
 
 module.exports = {
+  buildDownloadLinks,
   DOWNLOAD_URL,
   PRICE,
   PRODUCT,

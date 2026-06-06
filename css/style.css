@@ -693,11 +693,15 @@ h2.center + *, .eyebrow.center { }
 }
 .product-preview-copy { text-align: center; }
 .product-preview-copy h2 {
-  max-width: 24ch;
+  max-width: 30ch;
   margin-inline: auto;
   color: #2a211d;
   font-size: clamp(1.7rem, 6.5vw, 2.55rem);
   text-wrap: balance;
+}
+.material-title-line {
+  display: block;
+  white-space: nowrap;
 }
 .material-title-accent {
   position: relative;
@@ -728,12 +732,8 @@ h2.center + *, .eyebrow.center { }
 }
 @media (max-width: 520px) {
   .product-preview-copy h2 {
-    max-width: 13.6ch;
-    font-size: clamp(1.7rem, 7.7vw, 2.05rem);
-  }
-  .material-title-accent {
-    display: table;
-    margin: .12em auto 0;
+    max-width: calc(100vw - 34px);
+    font-size: clamp(1.45rem, 6.65vw, 1.68rem);
   }
 }
 .material-cover-panel {
